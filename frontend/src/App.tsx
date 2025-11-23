@@ -4,18 +4,23 @@ import { Aptos, AptosConfig, Network } from '@aptos-labs/ts-sdk'
 import SendMessage from './components/SendMessage'
 import Inbox from './components/Inbox'
 import NotificationSystem from './components/NotificationSystem'
+import GroupList from './components/GroupList'
+import GroupChat from './components/GroupChat'
+import CreateGroupModal from './components/CreateGroupModal'
 import { getRealtimeService, type RealtimeMessage } from './lib/realtime'
 import { useNotifications } from './lib/notifications'
 import logo from '/public/logo.png'
 import './App.css'
 
-const aptosConfig = new AptosConfig({ network: Network.DEVNET })
+const aptosConfig = new AptosConfig({ network: Network.TESTNET })
 const aptos = new Aptos(aptosConfig)
 
 const CONTRACT_ADDRESS = "0xf1768eb79d367572b8e436f8e3bcfecf938eeaf6656a65f73773c50c43b71d67"
 
+type AppView = 'dm' | 'groups'
+
 function App() {
-  const { account, connected, connect, disconnect, wallets } = useWallet()
+  const { account, connected, connect, disconnect, wallets, signAndSubmitTransaction } = useWallet()
   const [hasInbox, setHasInbox] = useState(false)
   const [loading, setLoading] = useState(false)
   const [networkError, setNetworkError] = useState<string | null>(null)
@@ -23,6 +28,11 @@ function App() {
   const [lastMessageSent, setLastMessageSent] = useState(0)
   const [realtimeEnabled, setRealtimeEnabled] = useState(true)
   const { notifications, addNotification, dismissNotification } = useNotifications()
+
+  // Group Chat State
+  const [currentView, setCurrentView] = useState<AppView>('dm')
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null)
+  const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(false)
 
   const refreshInbox = useCallback(() => {
     console.log('Triggering inbox refresh')
@@ -67,7 +77,7 @@ function App() {
         } catch (error: unknown) {
           console.error('Network error:', error)
           if (error instanceof Error && error.message?.includes('mainnet')) {
-            setNetworkError('⚠️ Please switch your wallet to Aptos DevNet to use this app!')
+            setNetworkError('⚠️ Please switch your wallet to Aptos Testnet to use this app!')
           }
         }
       }
@@ -143,16 +153,13 @@ function App() {
       console.log('Creating inbox for account:', account.address)
       console.log('Contract address:', CONTRACT_ADDRESS)
 
-      const payload = {
-        type: "entry_function_payload",
-        function: `${CONTRACT_ADDRESS}::Inbox3::create_inbox`,
-        type_arguments: [],
-        arguments: []
-      }
-
-      console.log('Transaction payload:', payload)
-
-      const response = await window.aptos.signAndSubmitTransaction({ payload })
+      const response = await signAndSubmitTransaction({
+        data: {
+          function: `${CONTRACT_ADDRESS}::Inbox3::create_inbox`,
+          typeArguments: [],
+          functionArguments: []
+        }
+      })
       console.log('Transaction submitted:', response)
 
       await aptos.waitForTransaction({ transactionHash: response.hash })
@@ -272,6 +279,15 @@ function App() {
   return (
     <div className="min-h-screen">
       <NotificationSystem notifications={notifications} onDismiss={dismissNotification} />
+      <CreateGroupModal
+        isOpen={isCreateGroupModalOpen}
+        onClose={() => setIsCreateGroupModalOpen(false)}
+        contractAddress={CONTRACT_ADDRESS}
+        onGroupCreated={() => {
+          // Refresh groups logic if needed, or just let the user see it in the list
+        }}
+      />
+
       <header className="header">
         <div className="container">
           <div className="flex items-center justify-between">
@@ -281,6 +297,25 @@ function App() {
                 <p className="text-xs text-muted">Secure Web3 Messaging</p>
               </div>
             </div>
+
+            {/* View Switcher */}
+            <div className="flex bg-background-secondary rounded-lg p-1 gap-1">
+              <button
+                onClick={() => setCurrentView('dm')}
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${currentView === 'dm' ? 'bg-primary text-white shadow-sm' : 'text-secondary hover:text-text-primary'
+                  }`}
+              >
+                Direct Messages
+              </button>
+              <button
+                onClick={() => setCurrentView('groups')}
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${currentView === 'groups' ? 'bg-primary text-white shadow-sm' : 'text-secondary hover:text-text-primary'
+                  }`}
+              >
+                Groups
+              </button>
+            </div>
+
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 desktop-only">
                 <div className="status-indicator status-online"></div>
@@ -338,38 +373,58 @@ function App() {
             </div>
           </div>
         ) : (
-          <div className="grid-cols-2">
-            <div className="animate-fade-in">
-              <div className="flex items-center gap-3 mb-6">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF591B" strokeWidth="2">
-                  <path d="M22 2L11 13" />
-                  <path d="M22 2L15 22L11 13L2 9L22 2Z" />
-                </svg>
-                <h2 className="text-xl font-semibold">Send Message</h2>
-              </div>
-              <SendMessage contractAddress={CONTRACT_ADDRESS} onMessageSent={handleMessageSent} />
-            </div>
-            <div className="animate-fade-in">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF591B" strokeWidth="2">
-                    <path d="M22 12H16L14 15H10L8 12H2" />
-                    <path d="M5.45 5.11L2 12V18A2 2 0 0 0 4 20H20A2 2 0 0 0 22 18V12L18.55 5.11A2 2 0 0 0 16.84 4H7.16A2 2 0 0 0 5.45 5.11Z" />
-                  </svg>
-                  <h2 className="text-xl font-semibold">Inbox</h2>
+          <>
+            {currentView === 'dm' ? (
+              <div className="grid-cols-2">
+                <div className="animate-fade-in">
+                  <div className="flex items-center gap-3 mb-6">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF591B" strokeWidth="2">
+                      <path d="M22 2L11 13" />
+                      <path d="M22 2L15 22L11 13L2 9L22 2Z" />
+                    </svg>
+                    <h2 className="text-xl font-semibold">Send Message</h2>
+                  </div>
+                  <SendMessage contractAddress={CONTRACT_ADDRESS} onMessageSent={handleMessageSent} />
                 </div>
-                <button onClick={refreshInbox} className="btn btn-outline text-sm">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M23 4V10H17" />
-                    <path d="M1 20V14H7" />
-                    <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14L18.36 18.36A9 9 0 0 1 3.51 15" />
-                  </svg>
-                  Refresh
-                </button>
+                <div className="animate-fade-in">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF591B" strokeWidth="2">
+                        <path d="M22 12H16L14 15H10L8 12H2" />
+                        <path d="M5.45 5.11L2 12V18A2 2 0 0 0 4 20H20A2 2 0 0 0 22 18V12L18.55 5.11A2 2 0 0 0 16.84 4H7.16A2 2 0 0 0 5.45 5.11Z" />
+                      </svg>
+                      <h2 className="text-xl font-semibold">Inbox</h2>
+                    </div>
+                    <button onClick={refreshInbox} className="btn btn-outline text-sm">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M23 4V10H17" />
+                        <path d="M1 20V14H7" />
+                        <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14L18.36 18.36A9 9 0 0 1 3.51 15" />
+                      </svg>
+                      Refresh
+                    </button>
+                  </div>
+                  <Inbox refreshKey={refreshKey} />
+                </div>
               </div>
-              <Inbox refreshKey={refreshKey} />
-            </div>
-          </div>
+            ) : (
+              <div className="animate-fade-in">
+                {selectedGroup ? (
+                  <GroupChat
+                    contractAddress={CONTRACT_ADDRESS}
+                    groupAddr={selectedGroup}
+                    onBack={() => setSelectedGroup(null)}
+                  />
+                ) : (
+                  <GroupList
+                    contractAddress={CONTRACT_ADDRESS}
+                    onSelectGroup={setSelectedGroup}
+                    onCreateGroup={() => setIsCreateGroupModalOpen(true)}
+                  />
+                )}
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>
