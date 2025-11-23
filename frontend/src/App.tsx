@@ -1,26 +1,22 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useWallet } from '@aptos-labs/wallet-adapter-react'
-import { Aptos, AptosConfig, Network } from '@aptos-labs/ts-sdk'
 import SendMessage from './components/SendMessage'
 import Inbox from './components/Inbox'
 import NotificationSystem from './components/NotificationSystem'
 import GroupList from './components/GroupList'
 import GroupChat from './components/GroupChat'
 import CreateGroupModal from './components/CreateGroupModal'
+import JoinGroupModal from './components/JoinGroupModal'
+import WalletModal from './components/WalletModal'
 import { getRealtimeService, type RealtimeMessage } from './lib/realtime'
 import { useNotifications } from './lib/notifications'
-import logo from '/public/logo.png'
+import { aptos, CONTRACT_ADDRESS, NETWORK } from './config'
 import './App.css'
-
-const aptosConfig = new AptosConfig({ network: Network.TESTNET })
-const aptos = new Aptos(aptosConfig)
-
-const CONTRACT_ADDRESS = "0xf1768eb79d367572b8e436f8e3bcfecf938eeaf6656a65f73773c50c43b71d67"
 
 type AppView = 'dm' | 'groups'
 
 function App() {
-  const { account, connected, connect, disconnect, wallets, signAndSubmitTransaction } = useWallet()
+  const { account, connected, connect, disconnect, wallets, signAndSubmitTransaction, network } = useWallet()
   const [hasInbox, setHasInbox] = useState(false)
   const [loading, setLoading] = useState(false)
   const [networkError, setNetworkError] = useState<string | null>(null)
@@ -33,6 +29,24 @@ function App() {
   const [currentView, setCurrentView] = useState<AppView>('dm')
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null)
   const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(false)
+  const [isJoinGroupModalOpen, setIsJoinGroupModalOpen] = useState(false)
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false)
+  const [walletModalMode, setWalletModalMode] = useState<'wallet' | 'social'>('wallet')
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('theme') === 'dark' ||
+        (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    }
+    return false
+  })
+  const [groupsRefreshKey, setGroupsRefreshKey] = useState(0)
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light')
+    localStorage.setItem('theme', darkMode ? 'dark' : 'light')
+  }, [darkMode])
+
+  const toggleDarkMode = () => setDarkMode(!darkMode)
 
   const refreshInbox = useCallback(() => {
     console.log('Triggering inbox refresh')
@@ -69,22 +83,21 @@ function App() {
 
   useEffect(() => {
     const checkNetwork = async () => {
-      if (connected && account) {
-        try {
-          const accountInfo = await aptos.getAccountInfo({ accountAddress: account.address })
-          console.log('Account info:', accountInfo)
+      if (connected && network) {
+        // Normalize network names for comparison
+        const currentNetwork = network.name.toLowerCase()
+        const requiredNetwork = NETWORK.toLowerCase()
+
+        if (currentNetwork !== requiredNetwork) {
+          setNetworkError(`⚠️ Wrong Network! You are on ${network.name}. Please switch your wallet to ${NETWORK}.`)
+        } else {
           setNetworkError(null)
-        } catch (error: unknown) {
-          console.error('Network error:', error)
-          if (error instanceof Error && error.message?.includes('mainnet')) {
-            setNetworkError('⚠️ Please switch your wallet to Aptos Testnet to use this app!')
-          }
         }
       }
     }
 
     checkNetwork()
-  }, [connected, account])
+  }, [connected, network])
 
   const checkInboxExists = useCallback(async () => {
     if (!account) return
@@ -99,7 +112,11 @@ function App() {
       })
 
       console.log('Inbox exists response:', response)
-      setHasInbox(response[0] as boolean)
+      if (response && Array.isArray(response) && response.length > 0) {
+        setHasInbox(response[0] as boolean)
+      } else {
+        setHasInbox(false)
+      }
     } catch (error) {
       console.error('Error checking inbox:', error)
       setHasInbox(false)
@@ -199,75 +216,141 @@ function App() {
   }, [hasInbox, loadMessages])
 
   if (!connected) {
+    const filteredWallets = wallets.filter(w => {
+      const isSocial = w.name.toLowerCase().includes('google') ||
+        w.name.toLowerCase().includes('apple') ||
+        w.name.toLowerCase().includes('keyless')
+      return walletModalMode === 'social' ? isSocial : !isSocial
+    })
+
     return (
-      <div className="welcome-container">
-        <div className="welcome-card">
-          <img src={logo} alt="Inbox3 Logo" className="welcome-logo-img" />
-          <p className="welcome-subtitle">
-            Secure, decentralized messaging powered by blockchain technology.
-          </p>
-          <div className="card p-6">
-            <h2 className="text-xl font-semibold mb-4">Connect Your Wallet</h2>
-            <p className="text-secondary mb-6">
-              Choose your preferred wallet to get started with secure messaging
-            </p>
-            <div className="space-y-3">
-              {wallets.map((wallet) => (
-                <button key={wallet.name} onClick={() => connect(wallet.name)} className="btn btn-primary w-full text-sm">
-                  {wallet.name === 'Petra' ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                      <path d="M11.3693 22.4084C7.56149 22.4084 4.47461 19.3215 4.47461 15.5137V4.0981L11.3693 1.59082V22.4084Z" fill="white" />
-                      <path d="M12.6304 13.8443C16.4382 13.8443 19.5251 10.7574 19.5251 6.94954V4.0981L12.6304 1.59082V13.8443Z" fill="white" />
-                    </svg>
-                  ) : (
-                    <img src={wallet.icon} alt={wallet.name} className="w-5 h-5" />
-                  )}
-                  Connect {wallet.name}
-                </button>
-              ))}
+      <div className="hero-container">
+        <WalletModal
+          isOpen={isWalletModalOpen}
+          onClose={() => setIsWalletModalOpen(false)}
+          wallets={filteredWallets}
+          onConnect={connect}
+          title={walletModalMode === 'social' ? 'Sign in with Social' : 'Connect Wallet'}
+        />
+
+        <div className="absolute top-6 right-6 z-50">
+          <button
+            onClick={toggleDarkMode}
+            className="p-2 rounded-full bg-(--bg-card) border border-(--border-color) text-(--text-primary) hover:bg-(--bg-secondary) transition-colors shadow-sm"
+            title="Toggle Dark Mode"
+          >
+            {darkMode ? (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="5" />
+                <line x1="12" y1="1" x2="12" y2="3" />
+                <line x1="12" y1="21" x2="12" y2="23" />
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                <line x1="1" y1="12" x2="3" y2="12" />
+                <line x1="21" y1="12" x2="23" y2="12" />
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+              </svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              </svg>
+            )}
+          </button>
+        </div>
+
+        <div className="hero-left">
+          <div className="login-card">
+            <div className="mb-8">
+              <img src="/logo.png" alt="Inbox3 Logo" className="w-16 mb-4" />
+              <h1 className="text-3xl font-bold text-(--text-primary) mb-2">Welcome Back</h1>
+              <p className="text-(--text-secondary)">Sign in to continue to your secure inbox</p>
             </div>
-            <div className="feature-grid">
-              <div className="feature-item">
-                <div className="feature-icon feature-icon-blue">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+
+            <div className="space-y-4 mb-6">
+              <button
+                onClick={() => {
+                  setWalletModalMode('wallet')
+                  setIsWalletModalOpen(true)
+                }}
+                className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-(--primary-brand) text-white rounded-xl hover:bg-(--primary-brand-hover) hover:shadow-lg hover:-translate-y-0.5 transition-all font-bold text-lg shadow-md"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M20 7h-9" />
+                  <path d="M14 17H5" />
+                  <circle cx="17" cy="17" r="3" />
+                  <circle cx="7" cy="7" r="3" />
+                </svg>
+                Connect Wallet
+              </button>
+
+              <button
+                onClick={() => {
+                  setWalletModalMode('social')
+                  setIsWalletModalOpen(true)
+                }}
+                className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-(--bg-card) border border-(--border-color) rounded-xl hover:bg-(--bg-secondary) transition-all text-(--text-primary) font-medium"
+              >
+                Sign in with other options
+              </button>
+            </div>
+
+            <div className="mt-8 text-center">
+              <p className="text-xs text-(--text-muted)">
+                By connecting, you agree to our Terms of Service and Privacy Policy
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="hero-right bg-linear-to-br from-(--bg-main) to-(--primary-brand-light)">
+          <div className="hero-branding">
+            <h2 className="hero-title text-(--text-primary)">
+              Secure Messaging<br />
+              <span className="text-(--primary-brand)">Reimagined</span>
+            </h2>
+            <p className="hero-subtitle text-(--text-secondary)">
+              Experience the future of communication with end-to-end encryption,
+              decentralized storage, and instant delivery on the Aptos blockchain.
+            </p>
+
+            <div className="feature-grid-hero">
+              <div className="feature-card-hero">
+                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mb-4 text-blue-600 dark:text-blue-400">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M12 2L2 7v10c0 5.55 3.84 10 9 10s9-4.45 9-10V7L12 2z" />
                   </svg>
                 </div>
-                <div className="feature-text">Secure</div>
-                <div className="text-xs text-muted">End-to-end encrypted messages</div>
+                <h3 className="font-bold text-lg mb-2 text-(--text-primary)">Secure</h3>
+                <p className="text-sm text-(--text-secondary)">End-to-end encrypted messages ensuring your privacy.</p>
               </div>
-              <div className="feature-item">
-                <div className="feature-icon feature-icon-green">
+              <div className="feature-card-hero">
+                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mb-4 text-green-600 dark:text-green-400">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
                   </svg>
                 </div>
-                <div className="feature-text">Fast</div>
-                <div className="text-xs text-muted">Lightning-fast blockchain transactions</div>
+                <h3 className="font-bold text-lg mb-2 text-(--text-primary)">Fast</h3>
+                <p className="text-sm text-(--text-secondary)">Lightning-fast transactions on the Aptos network.</p>
               </div>
-              <div className="feature-item">
-                <div className="feature-icon feature-icon-purple">
+              <div className="feature-card-hero">
+                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mb-4 text-purple-600 dark:text-purple-400">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="10" />
                     <path d="M12 6v6l4 2" />
                   </svg>
                 </div>
-                <div className="feature-text">Global</div>
-                <div className="text-xs text-muted">Send messages anywhere in the world</div>
+                <h3 className="font-bold text-lg mb-2 text-(--text-primary)">Real-time</h3>
+                <p className="text-sm text-(--text-secondary)">Instant message delivery and status updates.</p>
               </div>
-              <div className="feature-item">
-                <div className="feature-icon feature-icon-orange">
+              <div className="feature-card-hero">
+                <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center mb-4 text-orange-500">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                    <polyline points="7.5,4.21 12,6.81 16.5,4.21" />
-                    <polyline points="7.5,19.79 7.5,14.6 3,12" />
-                    <polyline points="21,12 16.5,14.6 16.5,19.79" />
-                    <polyline points="3.27,6.96 12,12.01 20.73,6.96" />
-                    <line x1="12" y1="22.08" x2="12" y2="12" />
                   </svg>
                 </div>
-                <div className="feature-text">Web3</div>
-                <div className="text-xs text-muted">Decentralized and trustless</div>
+                <h3 className="font-bold text-lg mb-2 text-(--text-primary)">Web3 Native</h3>
+                <p className="text-sm text-(--text-secondary)">Fully decentralized and trustless architecture.</p>
               </div>
             </div>
           </div>
@@ -277,39 +360,47 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="app-container">
       <NotificationSystem notifications={notifications} onDismiss={dismissNotification} />
       <CreateGroupModal
         isOpen={isCreateGroupModalOpen}
         onClose={() => setIsCreateGroupModalOpen(false)}
         contractAddress={CONTRACT_ADDRESS}
         onGroupCreated={() => {
-          // Refresh groups logic if needed, or just let the user see it in the list
+          setGroupsRefreshKey(prev => prev + 1)
+        }}
+      />
+      <JoinGroupModal
+        isOpen={isJoinGroupModalOpen}
+        onClose={() => setIsJoinGroupModalOpen(false)}
+        contractAddress={CONTRACT_ADDRESS}
+        onGroupJoined={() => {
+          setGroupsRefreshKey(prev => prev + 1)
         }}
       />
 
-      <header className="header">
+      <header className="header bg-(--bg-card) border-b border-(--border-color)">
         <div className="container">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <img src={logo} alt="Inbox3 Logo" className="w-28" />
+              <img src="/logo.png" alt="Inbox3 Logo" className="w-8" />
               <div>
-                <p className="text-xs text-muted">Secure Web3 Messaging</p>
+                <h1 className="font-bold text-lg text-(--text-primary)">Inbox3</h1>
               </div>
             </div>
 
             {/* View Switcher */}
-            <div className="flex bg-background-secondary rounded-lg p-1 gap-1">
+            <div className="flex bg-(--bg-secondary) rounded-lg p-1 gap-1">
               <button
                 onClick={() => setCurrentView('dm')}
-                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${currentView === 'dm' ? 'bg-primary text-white shadow-sm' : 'text-secondary hover:text-text-primary'
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${currentView === 'dm' ? 'bg-(--bg-card) text-(--primary-brand) shadow-sm' : 'text-(--text-secondary) hover:text-(--text-primary)'
                   }`}
               >
                 Direct Messages
               </button>
               <button
                 onClick={() => setCurrentView('groups')}
-                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${currentView === 'groups' ? 'bg-primary text-white shadow-sm' : 'text-secondary hover:text-text-primary'
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${currentView === 'groups' ? 'bg-(--bg-card) text-(--primary-brand) shadow-sm' : 'text-(--text-secondary) hover:text-(--text-primary)'
                   }`}
               >
                 Groups
@@ -318,36 +409,62 @@ function App() {
 
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 desktop-only">
-                <div className="status-indicator status-online"></div>
-                <span className="text-sm text-secondary">Connected</span>
+                <div className="w-2 h-2 rounded-full bg-(--success-green)"></div>
+                <span className="text-sm text-(--text-secondary)">Connected</span>
               </div>
-              <span className="text-sm text-secondary">
+              <span className="text-sm text-(--text-secondary) font-mono bg-(--bg-secondary) px-2 py-1 rounded">
                 {account?.address?.toString()?.slice(0, 6)}...{account?.address?.toString()?.slice(-4)}
               </span>
-              <div className="flex items-center gap-2">
-                {realtimeEnabled && (
-                  <span className="text-sm text-secondary desktop-only">LIVE</span>
+
+              <button
+                onClick={() => setRealtimeEnabled(prev => !prev)}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${realtimeEnabled
+                  ? 'bg-green-50 text-green-700 border-green-200'
+                  : 'bg-(--bg-card) text-(--text-secondary) border-(--border-color) hover:text-(--text-primary)'
+                  }`}
+                title="Toggle real-time updates"
+              >
+                {realtimeEnabled ? 'Realtime: ON' : 'Realtime: OFF'}
+              </button>
+
+              <button
+                onClick={toggleDarkMode}
+                className="p-2 rounded-full text-(--text-secondary) hover:bg-(--bg-secondary) hover:text-(--text-primary) transition-colors"
+              >
+                {darkMode ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="5" />
+                    <line x1="12" y1="1" x2="12" y2="3" />
+                    <line x1="12" y1="21" x2="12" y2="23" />
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                    <line x1="1" y1="12" x2="3" y2="12" />
+                    <line x1="21" y1="12" x2="23" y2="12" />
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                  </svg>
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                  </svg>
                 )}
-                <span className="text-sm text-muted desktop-only">Real-time</span>
-                <button onClick={() => setRealtimeEnabled(!realtimeEnabled)} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${realtimeEnabled ? 'bg-orange-500' : 'bg-gray-300'}`}>
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${realtimeEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
-              </div>
-              <button onClick={disconnect} className="btn btn-outline text-sm">
+              </button>
+
+              <button onClick={disconnect} className="btn btn-outline text-sm py-1.5 px-3">
                 Disconnect
               </button>
             </div>
           </div>
         </div>
       </header>
-      <main className="container py-6 mt-6">
+      <main className="main-content-centered">
         {networkError && (
-          <div className="card p-4 mb-6 border-l-4 border-warning-yellow">
+          <div className="card p-4 mb-6 border-l-4 border-warning-yellow bg-warning-yellow/10">
             <div className="flex items-center gap-3">
-              <div className="security-notice-icon">⚠</div>
+              <div className="text-2xl">⚠️</div>
               <div>
-                <p className="font-medium text-primary">Network Warning</p>
-                <p className="text-sm text-secondary">{networkError}</p>
+                <p className="font-bold text-text-primary">Network Mismatch</p>
+                <p className="text-sm text-text-primary">{networkError}</p>
               </div>
             </div>
           </div>
@@ -355,7 +472,7 @@ function App() {
         {!hasInbox ? (
           <div className="text-center">
             <div className="card p-8 max-w-md mx-auto">
-              <img src={logo} alt="Inbox3 Logo" className="welcome-logo-img" />
+              <img src="/logo.png" alt="Inbox3 Logo" className="welcome-logo-img" />
               <h2 className="text-2xl font-bold mb-4">Welcome to Inbox3!</h2>
               <p className="text-secondary mb-6">
                 Create your decentralized inbox to start receiving secure messages on the Aptos blockchain.
@@ -375,7 +492,7 @@ function App() {
         ) : (
           <>
             {currentView === 'dm' ? (
-              <div className="grid-cols-2">
+              <div className="centered-grid">
                 <div className="animate-fade-in">
                   <div className="flex items-center gap-3 mb-6">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF591B" strokeWidth="2">
@@ -388,13 +505,7 @@ function App() {
                 </div>
                 <div className="animate-fade-in">
                   <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF591B" strokeWidth="2">
-                        <path d="M22 12H16L14 15H10L8 12H2" />
-                        <path d="M5.45 5.11L2 12V18A2 2 0 0 0 4 20H20A2 2 0 0 0 22 18V12L18.55 5.11A2 2 0 0 0 16.84 4H7.16A2 2 0 0 0 5.45 5.11Z" />
-                      </svg>
-                      <h2 className="text-xl font-semibold">Inbox</h2>
-                    </div>
+                    <h2 className="text-xl font-semibold">Inbox</h2>
                     <button onClick={refreshInbox} className="btn btn-outline text-sm">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M23 4V10H17" />
@@ -420,6 +531,8 @@ function App() {
                     contractAddress={CONTRACT_ADDRESS}
                     onSelectGroup={setSelectedGroup}
                     onCreateGroup={() => setIsCreateGroupModalOpen(true)}
+                    onJoinGroup={() => setIsJoinGroupModalOpen(true)}
+                    refreshTrigger={groupsRefreshKey}
                   />
                 )}
               </div>

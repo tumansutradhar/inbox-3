@@ -1,17 +1,16 @@
 import { useState, useEffect } from 'react'
 import { useWallet } from '@aptos-labs/wallet-adapter-react'
-import { Aptos, AptosConfig, Network } from '@aptos-labs/ts-sdk'
-
-const aptosConfig = new AptosConfig({ network: Network.DEVNET })
-const aptos = new Aptos(aptosConfig)
+import { aptos } from '../config'
 
 interface GroupListProps {
     contractAddress: string
     onSelectGroup: (groupAddr: string) => void
     onCreateGroup: () => void
+    onJoinGroup: () => void
+    refreshTrigger?: number
 }
 
-export default function GroupList({ contractAddress, onSelectGroup, onCreateGroup }: GroupListProps) {
+export default function GroupList({ contractAddress, onSelectGroup, onCreateGroup, onJoinGroup, refreshTrigger }: GroupListProps) {
     const { account } = useWallet()
     const [groups, setGroups] = useState<{ addr: string, name: string }[]>([])
     const [loading, setLoading] = useState(false)
@@ -20,7 +19,7 @@ export default function GroupList({ contractAddress, onSelectGroup, onCreateGrou
         if (account) {
             fetchGroups()
         }
-    }, [account])
+    }, [account, refreshTrigger])
 
     const fetchGroups = async () => {
         if (!account) return
@@ -34,6 +33,11 @@ export default function GroupList({ contractAddress, onSelectGroup, onCreateGrou
                 }
             })
 
+            if (!response || !Array.isArray(response) || response.length === 0) {
+                setGroups([])
+                return
+            }
+
             const groupAddrs = response[0] as string[]
 
             // 2. Fetch details for each group
@@ -45,6 +49,11 @@ export default function GroupList({ contractAddress, onSelectGroup, onCreateGrou
                             functionArguments: [addr]
                         }
                     })
+
+                    if (!details || !Array.isArray(details) || details.length === 0) {
+                        return null
+                    }
+
                     return {
                         addr,
                         name: details[0] as string
@@ -67,9 +76,14 @@ export default function GroupList({ contractAddress, onSelectGroup, onCreateGrou
         <div className="card p-4 h-full">
             <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-lg">Your Groups</h3>
-                <button onClick={onCreateGroup} className="btn btn-sm btn-primary">
-                    + New Group
-                </button>
+                <div className="flex gap-2">
+                    <button onClick={onJoinGroup} className="btn btn-sm btn-outline">
+                        Join
+                    </button>
+                    <button onClick={onCreateGroup} className="btn btn-sm btn-primary">
+                        + New
+                    </button>
+                </div>
             </div>
 
             {loading ? (

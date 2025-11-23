@@ -1,11 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import { Aptos, AptosConfig, Network } from '@aptos-labs/ts-sdk';
-import { download } from '../lib/ipfs';
-
-const aptosConfig = new AptosConfig({ network: Network.DEVNET });
-const aptos = new Aptos(aptosConfig);
-const CONTRACT_ADDRESS = "0xf1768eb79d367572b8e436f8e3bcfecf938eeaf6656a65f73773c50c43b71d67";
+import { aptos, CONTRACT_ADDRESS } from '../config';
 
 interface Message {
   sender: string;
@@ -18,6 +13,7 @@ interface Message {
 interface ProcessedMessage extends Message {
   plain: string;
   cidString?: string;
+  type?: 'text' | 'audio';
 }
 
 interface InboxProps {
@@ -46,17 +42,21 @@ export default function Inbox({ refreshKey }: InboxProps) {
 
       console.log('Raw messages from contract:', messages);
 
+      if (!messages || !Array.isArray(messages) || messages.length === 0) {
+        setMsgs([]);
+        return;
+      }
+
       const messageList = messages[0] as Message[];
       console.log('Message list:', messageList);
 
       const processedMessages: ProcessedMessage[] = await Promise.all(messageList.map(async (m: Message, index: number) => {
         try {
           console.log(`Processing message ${index}:`, m);
-          console.log('CID raw bytes:', m.cid);
-          console.log('CID length:', m.cid.length);
 
           let messageContent = `Message #${index} from ${m.sender.slice(0, 6)}...${m.sender.slice(-4)}`;
           let cidString = '';
+          let messageType: 'text' | 'audio' = 'text';
 
           try {
             if (typeof m.cid === 'string' && m.cid.startsWith('0x')) {
@@ -66,45 +66,18 @@ export default function Inbox({ refreshKey }: InboxProps) {
                 const hexByte = hexString.substr(i, 2);
                 cidString += String.fromCharCode(parseInt(hexByte, 16));
               }
-              console.log('CID decoded from hex successfully:', cidString);
             } else if (Array.isArray(m.cid)) {
               cidString = new TextDecoder().decode(new Uint8Array(m.cid));
-              console.log('CID decoded successfully:', cidString);
             } else {
-              console.log('Unknown CID format:', typeof m.cid);
-              cidString = 'unknown-format';
+              cidString = String(m.cid);
             }
           } catch (decodeError) {
-            console.log('CID decode failed, trying alternative method:', decodeError);
-            try {
-              if (Array.isArray(m.cid)) {
-                cidString = String.fromCharCode(...m.cid);
-                console.log('Alternative CID decode:', cidString);
-              } else {
-                cidString = 'decode-failed';
-              }
-            } catch (altError) {
-              console.log('Alternative decode also failed:', altError);
-              cidString = 'decode-failed';
-            }
+            console.log('CID decode failed:', decodeError);
+            cidString = 'decode-failed';
           }
 
-          console.log('Processing message with CID:', cidString);
-
           try {
-            if (cidString.startsWith('mock-cid-') || cidString.startsWith('fallback-cid-')) {
-              console.log('Mock CID detected, retrieving stored message');
-              try {
-                const storedData = await download(cidString);
-                const messageData = JSON.parse(storedData);
-                messageContent = messageData.content || 'Test message';
-                console.log('Retrieved mock message content:', messageContent);
-              } catch (e) {
-                console.log('Failed to retrieve mock data:', e);
-                const timestamp = new Date(m.timestamp * 1000).toLocaleString();
-                messageContent = `Message sent at ${timestamp}`;
-              }
-            } else if (cidString && cidString !== 'decode-failed') {
+            if (cidString && cidString !== 'decode-failed') {
               const timestamp = new Date(m.timestamp * 1000).toLocaleString();
 
               try {
@@ -112,42 +85,34 @@ export default function Inbox({ refreshKey }: InboxProps) {
                 if (response.ok) {
                   const data = await response.json();
                   messageContent = data.content || data.message || `Message sent at ${timestamp}`;
-                } else {
-                  messageContent = `Message sent at ${timestamp} (CID: ${cidString.slice(0, 15)}...)`;
+                  messageType = data.type || 'text';
                 }
               } catch (fetchError) {
                 console.log('IPFS fetch failed:', fetchError);
-                messageContent = `Message sent at ${timestamp} (CID: ${cidString.slice(0, 15)}...)`;
               }
-            } else {
-              const timestamp = new Date(m.timestamp * 1000).toLocaleString();
-              messageContent = `Message sent at ${timestamp} (CID decode failed)`;
             }
           } catch (contentError) {
             console.log('Error getting message content:', contentError);
-            const timestamp = new Date(m.timestamp * 1000).toLocaleString();
-            messageContent = `Message sent at ${timestamp}`;
           }
 
           return {
             ...m,
             plain: messageContent,
-            cidString
+            cidString,
+            type: messageType
           };
         } catch (error) {
-          console.error('Error processing message:', error, 'Message:', m);
-          const timestamp = new Date((m.timestamp || Date.now() / 1000) * 1000).toLocaleString();
+          console.error('Error processing message:', error);
           return {
             ...m,
-            plain: `Message from ${(m.sender || 'unknown').slice(0, 6)}...${(m.sender || 'unknown').slice(-4)} sent at ${timestamp}`,
-            cidString: 'error'
+            plain: 'Error loading message',
+            cidString: 'error',
+            type: 'text'
           };
         }
       }));
 
-      console.log('Processed messages:', processedMessages);
       setMsgs(processedMessages);
-      console.log('Messages set in state, count:', processedMessages.length);
     } catch (error) {
       console.error('Error loading messages:', error);
     } finally {
@@ -178,6 +143,11 @@ export default function Inbox({ refreshKey }: InboxProps) {
     }
   };
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    // You could add a toast notification here
+  };
+
   if (loading) {
     return (
       <div className="card p-6">
@@ -192,13 +162,7 @@ export default function Inbox({ refreshKey }: InboxProps) {
   return (
     <div>
       {msgs.length === 0 ? (
-        <div className="p-8 text-center">
-          <div className="icon icon-gray w-12 h-12 mx-auto mb-4">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M22 12H16L14 15H10L8 12H2" />
-              <path d="M5.45 5.11L2 12V18A2 2 0 0 0 4 20H20A2 2 0 0 0 22 18V12L18.55 5.11A2 2 0 0 0 16.84 4H7.16A2 2 0 0 0 5.45 5.11Z" />
-            </svg>
-          </div>
+        <div className="p-6 text-center border border-dashed border-(--border-color) rounded-2xl bg-(--bg-secondary)">
           <h3 className="font-medium text-primary mb-2">No messages yet</h3>
           <p className="text-secondary text-sm">
             Your inbox is empty. Messages will appear here once you receive them.
@@ -214,13 +178,28 @@ export default function Inbox({ refreshKey }: InboxProps) {
                     <div className="avatar">
                       {m.sender.slice(2, 4).toUpperCase()}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-primary text-sm">
-                        {m.sender.slice(0, 6)}...{m.sender.slice(-4)}
-                      </span>
-                      <div className="w-1 h-1 bg-muted rounded-full"></div>
-                      <span className="text-xs text-muted">
-                        {new Date(m.timestamp * 1000).toLocaleString()}
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-primary text-sm" title={m.sender}>
+                          {m.sender.slice(0, 6)}...{m.sender.slice(-4)}
+                        </span>
+                        <button
+                          onClick={() => copyToClipboard(m.sender)}
+                          className="text-xs text-(--text-secondary) hover:text-(--primary-brand) transition-colors"
+                          title="Copy Address"
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                          </svg>
+                        </button>
+                        <div className="w-1 h-1 bg-muted rounded-full"></div>
+                        <span className="text-xs text-muted">
+                          {new Date(m.timestamp * 1000).toLocaleString()}
+                        </span>
+                      </div>
+                      <span className="text-[11px] font-mono text-(--text-secondary) break-all select-all">
+                        {m.sender}
                       </span>
                     </div>
                   </div>
@@ -229,15 +208,32 @@ export default function Inbox({ refreshKey }: InboxProps) {
                   )}
                 </div>
                 <div className="message-content">
-                  <p className="text-sm text-primary">{m.plain}</p>
+                  {m.type === 'audio' ? (
+                    <audio controls src={m.plain} className="w-full mt-2" />
+                  ) : (
+                    <p className="text-sm text-(--text-primary)">{m.plain}</p>
+                  )}
                 </div>
-                {!m.read && (
-                  <div className="mt-3">
+                <div className="flex items-center justify-between mt-3">
+                  <a
+                    href={`https://explorer.aptoslabs.com/account/${CONTRACT_ADDRESS}?network=testnet`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs text-(--primary-brand) hover:underline opacity-50 hover:opacity-100 transition-opacity flex items-center gap-1"
+                    title="View on Explorer"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                    </svg>
+                    On-chain Proof
+                  </a>
+                  {!m.read && (
                     <button onClick={() => markAsRead(index)} className="btn btn-outline text-xs py-1 px-3">
                       Mark as Read
                     </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             ))}
           </div>
