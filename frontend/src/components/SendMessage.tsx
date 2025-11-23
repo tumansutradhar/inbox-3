@@ -12,7 +12,7 @@ interface SendMessageProps {
 }
 
 export default function SendMessage({ contractAddress, onMessageSent }: SendMessageProps) {
-  const { account } = useWallet()
+  const { account, signAndSubmitTransaction } = useWallet()
   const [recipient, setRecipient] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
@@ -26,7 +26,7 @@ export default function SendMessage({ contractAddress, onMessageSent }: SendMess
     setLoading(true)
     setCurrentStep('Encrypting message...')
     setIpfsHash('')
-    
+
     try {
       // Step 1: Encrypt message data
       const messageData = {
@@ -37,24 +37,23 @@ export default function SendMessage({ contractAddress, onMessageSent }: SendMess
 
       setCurrentStep('Uploading to IPFS...')
       console.log('🔐 Encrypting message data:', messageData)
-      
+
       // Step 2: Upload to IPFS
       const cid = await upload(JSON.stringify(messageData))
       setIpfsHash(cid)
       console.log('📦 IPFS Upload complete! Hash:', cid)
-      
-      setCurrentStep('Storing on blockchain...')
-      
-      // Step 3: Store on blockchain
-      const payload = {
-        type: "entry_function_payload",
-        function: `${contractAddress}::Inbox3::send_message`,
-        type_arguments: [],
-        arguments: [recipient, Array.from(new TextEncoder().encode(cid))]
-      }
 
-      console.log('⛓️ Sending transaction to blockchain:', payload);
-      const response = await window.aptos.signAndSubmitTransaction({ payload })
+      setCurrentStep('Storing on blockchain...')
+
+      // Step 3: Store on blockchain
+      // Step 3: Store on blockchain
+      const response = await signAndSubmitTransaction({
+        data: {
+          function: `${contractAddress}::Inbox3::send_message`,
+          typeArguments: [],
+          functionArguments: [recipient, Array.from(new TextEncoder().encode(cid))]
+        }
+      })
       console.log('🚀 Transaction submitted:', response);
 
       setCurrentStep('Confirming transaction...')
@@ -109,7 +108,7 @@ export default function SendMessage({ contractAddress, onMessageSent }: SendMess
             Your message will be encrypted and stored on IPFS
           </div>
         </div>
-        
+
         {/* Status Indicator */}
         {(loading || currentStep) && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -130,7 +129,7 @@ export default function SendMessage({ contractAddress, onMessageSent }: SendMess
             </div>
           </div>
         )}
-        
+
         <div className="security-notice">
           <div className="flex items-center gap-3">
             <div className="security-notice-icon">!</div>

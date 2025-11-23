@@ -95,3 +95,22 @@ export const download = async (cid: string): Promise<string> => {
     return JSON.stringify({ content: 'Error loading message', timestamp: Date.now() });
   }
 };
+
+export const uploadToPinata = async (content: string, sender: string): Promise<string> => {
+  const data = JSON.stringify({
+    sender,
+    content,
+    timestamp: Date.now()
+  });
+  return upload(data);
+};
+
+export const getFromPinata = async (cid: string): Promise<{ content: string; sender: string; timestamp: number }> => {
+  try {
+    const jsonStr = await download(cid);
+    return JSON.parse(jsonStr);
+  } catch (e) {
+    console.error('Failed to parse message JSON:', e);
+    return { content: 'Failed to load message', sender: 'Unknown', timestamp: Date.now() };
+  }
+};

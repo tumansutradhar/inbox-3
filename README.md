@@ -1,4 +1,4 @@
-# 🎉 Inbox3 - Decentralized Messaging on Aptos (FULLY WORKING!)
+# Inbox3 - Decentralized Messaging on Aptos
 
 A decentralized messaging application built on the Aptos blockchain with IPFS storage for message content and end-to-end encryption.
 
@@ -68,23 +68,6 @@ A decentralized messaging application built on the Aptos blockchain with IPFS st
    cp .env.example .env
    ```
    
-   Edit `.env` and add your Pinata credentials:
-   ```
-   VITE_PINATA_API_KEY=your_pinata_api_key_here
-   VITE_PINATA_SECRET_KEY=your_pinata_secret_key_here
-   ```
-   
-   **Get Pinata credentials:** See `PINATA_SETUP.md` for detailed instructions.
-
-3. **Run development server**:
-   ```bash
-   pnpm dev
-   ```
-
-### Smart Contract Setup
-
-1. **Install Aptos CLI**:
-   ```bash
    curl -fsSL "https://aptos.dev/scripts/install_cli.py" | python3
    ```
 
