@@ -6,11 +6,12 @@ import { aptos } from '../config'
 interface SendMessageProps {
   contractAddress: string
   onMessageSent: () => void
+  initialRecipient?: string
 }
 
-export default function SendMessage({ contractAddress, onMessageSent }: SendMessageProps) {
+export default function SendMessage({ contractAddress, onMessageSent, initialRecipient }: SendMessageProps) {
   const { account, signAndSubmitTransaction } = useWallet()
-  const [recipient, setRecipient] = useState('')
+  const [recipient, setRecipient] = useState(initialRecipient ?? '')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [currentStep, setCurrentStep] = useState('')
@@ -39,6 +40,12 @@ export default function SendMessage({ contractAddress, onMessageSent }: SendMess
     }
   }, [isRecording])
 
+  useEffect(() => {
+    if (initialRecipient && initialRecipient !== recipient) {
+      setRecipient(initialRecipient)
+    }
+  }, [initialRecipient, recipient])
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
@@ -47,17 +54,17 @@ export default function SendMessage({ contractAddress, onMessageSent }: SendMess
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           sampleRate: 44100
         }
       })
-      
+
       const options = { mimeType: 'audio/webm;codecs=opus' }
       let mediaRecorder: MediaRecorder
-      
+
       if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
         mediaRecorder = new MediaRecorder(stream, options)
       } else if (MediaRecorder.isTypeSupported('audio/webm')) {
@@ -65,7 +72,7 @@ export default function SendMessage({ contractAddress, onMessageSent }: SendMess
       } else {
         mediaRecorder = new MediaRecorder(stream)
       }
-      
+
       mediaRecorderRef.current = mediaRecorder
       audioChunksRef.current = []
 
@@ -216,14 +223,14 @@ export default function SendMessage({ contractAddress, onMessageSent }: SendMess
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="form-group">
           <label className="form-label">Recipient Address</label>
-          <input 
-            type="text" 
-            value={recipient} 
-            onChange={(e) => setRecipient(e.target.value)} 
-            placeholder="0x..." 
-            className="input" 
+          <input
+            type="text"
+            value={recipient}
+            onChange={(e) => setRecipient(e.target.value)}
+            placeholder="0x..."
+            className="input"
             style={{ border: '1px solid rgba(0,0,0,0.08)' }}
-            required 
+            required
           />
           <div className="form-help">
             Enter the recipient's wallet address (starts with 0x)
@@ -250,7 +257,7 @@ export default function SendMessage({ contractAddress, onMessageSent }: SendMess
                   ? 'bg-red-500 text-white animate-pulse'
                   : 'bg-(--bg-card) text-(--text-secondary) hover:text-(--primary-brand)'
                   }`}
-                style={{ 
+                style={{
                   border: isRecording ? 'none' : '1px solid rgba(0,0,0,0.08)',
                   minWidth: '140px'
                 }}

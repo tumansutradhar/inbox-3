@@ -1,7 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useWallet } from '@aptos-labs/wallet-adapter-react'
 import SendMessage from './components/SendMessage'
-import Inbox from './components/Inbox'
+import Inbox, { type ProcessedMessage } from './components/Inbox'
+import MessageSearch from './components/MessageSearch'
+import ProfileEditor from './components/ProfileEditor'
+import ContactsList from './components/ContactsList'
 import NotificationSystem from './components/NotificationSystem'
 import GroupList from './components/GroupList'
 import GroupChat from './components/GroupChat'
@@ -10,10 +13,12 @@ import JoinGroupModal from './components/JoinGroupModal'
 import WalletModal from './components/WalletModal'
 import { getRealtimeService, type RealtimeMessage } from './lib/realtime'
 import { useNotifications } from './lib/notifications'
+import { type SearchableMessage } from './lib/messageSearcher'
 import { aptos, CONTRACT_ADDRESS, NETWORK } from './config'
 import './App.css'
 
 type AppView = 'dm' | 'groups'
+type ActiveTool = 'profile' | 'contacts' | 'search' | 'none'
 
 function App() {
   const { account, connected, connect, disconnect, wallets, signAndSubmitTransaction, network } = useWallet()
@@ -40,6 +45,9 @@ function App() {
     return false
   })
   const [groupsRefreshKey, setGroupsRefreshKey] = useState(0)
+  const [activeTool, setActiveTool] = useState<ActiveTool>('profile')
+  const [loadedMessages, setLoadedMessages] = useState<ProcessedMessage[]>([])
+  const [selectedRecipient, setSelectedRecipient] = useState('')
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light')
@@ -80,6 +88,11 @@ function App() {
     refreshInbox()
     setLastMessageSent(Date.now())
   }, [refreshInbox])
+
+  const handleMessageSentAndReset = useCallback(() => {
+    handleMessageSent()
+    setSelectedRecipient('')
+  }, [handleMessageSent])
 
   useEffect(() => {
     const checkNetwork = async () => {
@@ -214,6 +227,53 @@ function App() {
       loadMessages()
     }
   }, [hasInbox, loadMessages])
+
+  const handleSelectContact = useCallback((address: string) => {
+    setSelectedRecipient(address)
+    setActiveTool('none')
+    setCurrentView('dm')
+  }, [])
+
+  useEffect(() => {
+    if (!hasInbox) {
+      setLoadedMessages([])
+    }
+  }, [hasInbox])
+
+  const toolTabs: Array<{ id: ActiveTool; label: string }> = [
+    { id: 'profile', label: 'Profile' },
+    { id: 'contacts', label: 'Contacts' },
+    { id: 'search', label: 'Search' },
+    { id: 'none', label: 'Hide Tools' }
+  ]
+
+  const renderToolContent = () => {
+    switch (activeTool) {
+      case 'profile':
+        return <ProfileEditor />
+      case 'contacts':
+        return <ContactsList onSelectContact={handleSelectContact} />
+      case 'search':
+        return <MessageSearch messages={searchableMessages} />
+      default:
+        return (
+          <div className="flex flex-col items-center justify-center h-full text-sm text-(--text-secondary)">
+            <p>Select a tool above to continue.</p>
+            <p className="text-xs mt-1 text-(--text-muted)">Profiles, contacts, and search are just a tap away.</p>
+          </div>
+        )
+    }
+  }
+
+  const searchableMessages = useMemo<SearchableMessage[]>(() => {
+    return loadedMessages.map((msg) => ({
+      sender: msg.sender,
+      content: msg.plain,
+      timestamp: msg.timestamp ? msg.timestamp * 1000 : Date.now(),
+      type: msg.type === 'audio' ? 'audio' : 'text',
+      parentId: undefined
+    }))
+  }, [loadedMessages])
 
   if (!connected) {
     const filteredWallets = wallets.filter(w => {
@@ -458,87 +518,116 @@ function App() {
         </div>
       </header>
       <main className="main-content-centered">
-        {networkError && (
-          <div className="card p-4 mb-6 border-l-4 border-warning-yellow bg-warning-yellow/10">
-            <div className="flex items-center gap-3">
-              <div className="text-2xl">⚠️</div>
-              <div>
-                <p className="font-bold text-text-primary">Network Mismatch</p>
-                <p className="text-sm text-text-primary">{networkError}</p>
-              </div>
-            </div>
-          </div>
-        )}
-        {!hasInbox ? (
-          <div className="text-center">
-            <div className="card p-8 max-w-md mx-auto">
-              <img src="/logo.png" alt="Inbox3 Logo" className="welcome-logo-img" />
-              <h2 className="text-2xl font-bold mb-4">Welcome to Inbox3!</h2>
-              <p className="text-secondary mb-6">
-                Create your decentralized inbox to start receiving secure messages on the Aptos blockchain.
-              </p>
-              <button onClick={createInbox} disabled={loading} className="btn btn-primary w-full">
-                {loading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="spinner"></div>
-                    Creating Inbox...
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px]">
+          <section className="space-y-6">
+            {networkError && (
+              <div className="card p-4 mb-6 border-l-4 border-warning-yellow bg-warning-yellow/10">
+                <div className="flex items-center gap-3">
+                  <div className="text-2xl">⚠️</div>
+                  <div>
+                    <p className="font-bold text-text-primary">Network Mismatch</p>
+                    <p className="text-sm text-text-primary">{networkError}</p>
                   </div>
-                ) : (
-                  'Create Your Inbox'
-                )}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
-            {currentView === 'dm' ? (
-              <div className="centered-grid">
-                <div className="animate-fade-in">
-                  <div className="flex items-center gap-3 mb-6">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF591B" strokeWidth="2">
-                      <path d="M22 2L11 13" />
-                      <path d="M22 2L15 22L11 13L2 9L22 2Z" />
-                    </svg>
-                    <h2 className="text-xl font-semibold">Send Message</h2>
-                  </div>
-                  <SendMessage contractAddress={CONTRACT_ADDRESS} onMessageSent={handleMessageSent} />
                 </div>
-                <div className="animate-fade-in">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-semibold">Inbox</h2>
-                    <button onClick={refreshInbox} className="btn btn-outline text-sm">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M23 4V10H17" />
-                        <path d="M1 20V14H7" />
-                        <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14L18.36 18.36A9 9 0 0 1 3.51 15" />
-                      </svg>
-                      Refresh
-                    </button>
-                  </div>
-                  <Inbox refreshKey={refreshKey} />
+              </div>
+            )}
+            {!hasInbox ? (
+              <div className="text-center">
+                <div className="card p-8 max-w-md mx-auto">
+                  <img src="/logo.png" alt="Inbox3 Logo" className="welcome-logo-img" />
+                  <h2 className="text-2xl font-bold mb-4">Welcome to Inbox3!</h2>
+                  <p className="text-secondary mb-6">
+                    Create your decentralized inbox to start receiving secure messages on the Aptos blockchain.
+                  </p>
+                  <button onClick={createInbox} disabled={loading} className="btn btn-primary w-full">
+                    {loading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="spinner"></div>
+                        Creating Inbox...
+                      </div>
+                    ) : (
+                      'Create Your Inbox'
+                    )}
+                  </button>
                 </div>
               </div>
             ) : (
-              <div className="animate-fade-in">
-                {selectedGroup ? (
-                  <GroupChat
-                    contractAddress={CONTRACT_ADDRESS}
-                    groupAddr={selectedGroup}
-                    onBack={() => setSelectedGroup(null)}
-                  />
+              <>
+                {currentView === 'dm' ? (
+                  <div className="centered-grid">
+                    <div className="animate-fade-in">
+                      <div className="flex items-center gap-3 mb-6">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF591B" strokeWidth="2">
+                          <path d="M22 2L11 13" />
+                          <path d="M22 2L15 22L11 13L2 9L22 2Z" />
+                        </svg>
+                        <h2 className="text-xl font-semibold">Send Message</h2>
+                      </div>
+                      <SendMessage
+                        contractAddress={CONTRACT_ADDRESS}
+                        onMessageSent={handleMessageSentAndReset}
+                        initialRecipient={selectedRecipient}
+                      />
+                    </div>
+                    <div className="animate-fade-in">
+                      <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-xl font-semibold">Inbox</h2>
+                        <button onClick={refreshInbox} className="btn btn-outline text-sm">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M23 4V10H17" />
+                            <path d="M1 20V14H7" />
+                            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14L18.36 18.36A9 9 0 0 1 3.51 15" />
+                          </svg>
+                          Refresh
+                        </button>
+                      </div>
+                      <Inbox refreshKey={refreshKey} onMessages={setLoadedMessages} />
+                    </div>
+                  </div>
                 ) : (
-                  <GroupList
-                    contractAddress={CONTRACT_ADDRESS}
-                    onSelectGroup={setSelectedGroup}
-                    onCreateGroup={() => setIsCreateGroupModalOpen(true)}
-                    onJoinGroup={() => setIsJoinGroupModalOpen(true)}
-                    refreshTrigger={groupsRefreshKey}
-                  />
+                  <div className="animate-fade-in">
+                    {selectedGroup ? (
+                      <GroupChat
+                        contractAddress={CONTRACT_ADDRESS}
+                        groupAddr={selectedGroup}
+                        onBack={() => setSelectedGroup(null)}
+                      />
+                    ) : (
+                      <GroupList
+                        contractAddress={CONTRACT_ADDRESS}
+                        onSelectGroup={setSelectedGroup}
+                        onCreateGroup={() => setIsCreateGroupModalOpen(true)}
+                        onJoinGroup={() => setIsJoinGroupModalOpen(true)}
+                        refreshTrigger={groupsRefreshKey}
+                      />
+                    )}
+                  </div>
                 )}
-              </div>
+              </>
             )}
-          </>
-        )}
+          </section>
+          <aside className="bg-(--bg-card) border border-(--border-color) rounded-3xl p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)]">
+            <div className="flex flex-wrap gap-2 mb-4">
+              {toolTabs.map((tool) => (
+                <button
+                  key={tool.id}
+                  type="button"
+                  onClick={() => setActiveTool(tool.id)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${activeTool === tool.id
+                      ? 'bg-(--primary-brand) text-white border-transparent'
+                      : 'bg-(--bg-secondary) text-(--text-secondary) border-(--border-color) hover:text-(--text-primary)'
+                    }`}
+                  aria-pressed={activeTool === tool.id}
+                >
+                  {tool.label}
+                </button>
+              ))}
+            </div>
+            <div className="min-h-80 max-h-[70vh] overflow-y-auto">
+              {renderToolContent()}
+            </div>
+          </aside>
+        </div>
       </main>
     </div>
   )

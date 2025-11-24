@@ -138,24 +138,44 @@ export const uploadFile = async (file: Blob): Promise<string> => {
   }
 };
 
-export const uploadToPinata = async (content: string, sender: string, type: 'text' | 'audio' = 'text'): Promise<string> => {
-  const data = JSON.stringify({
+interface IpfsMessagePayload {
+  content: string;
+  sender: string;
+  timestamp: number;
+  type?: 'text' | 'audio';
+  parentId?: string | null;
+}
+
+export const uploadToPinata = async (
+  content: string,
+  sender: string,
+  type: 'text' | 'audio' = 'text',
+  parentId?: string | null
+): Promise<string> => {
+  const payload: IpfsMessagePayload = {
     content,
     sender,
     timestamp: Date.now(),
-    type
-  });
-  return upload(data);
-};
+    type,
+    parentId: parentId ?? null,
+  }
+  return upload(JSON.stringify(payload))
+}
 
 export const getFromPinata = async (
   cid: string
-): Promise<{ content: string; sender: string; timestamp: number; type?: 'text' | 'audio' }> => {
+): Promise<IpfsMessagePayload> => {
   try {
     const jsonStr = await download(cid);
     return JSON.parse(jsonStr);
   } catch (e) {
     console.error('Failed to parse message JSON:', e);
-    return { content: 'Failed to load message', sender: 'Unknown', timestamp: Date.now(), type: 'text' };
+    return {
+      content: 'Failed to load message',
+      sender: 'Unknown',
+      timestamp: Date.now(),
+      type: 'text',
+      parentId: null,
+    };
   }
-};
+}

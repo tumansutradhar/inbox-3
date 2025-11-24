@@ -10,7 +10,7 @@ interface Message {
   plain?: string;
 }
 
-interface ProcessedMessage extends Message {
+export interface ProcessedMessage extends Message {
   plain: string;
   cidString?: string;
   type?: 'text' | 'audio';
@@ -18,9 +18,10 @@ interface ProcessedMessage extends Message {
 
 interface InboxProps {
   refreshKey?: number;
+  onMessages?: (messages: ProcessedMessage[]) => void;
 }
 
-export default function Inbox({ refreshKey }: InboxProps) {
+export default function Inbox({ refreshKey, onMessages }: InboxProps) {
   const { account } = useWallet();
   const [msgs, setMsgs] = useState<ProcessedMessage[]>([]);
   const [loading, setLoading] = useState(false);
@@ -44,6 +45,7 @@ export default function Inbox({ refreshKey }: InboxProps) {
 
       if (!messages || !Array.isArray(messages) || messages.length === 0) {
         setMsgs([]);
+        onMessages?.([]);
         return;
       }
 
@@ -115,6 +117,7 @@ export default function Inbox({ refreshKey }: InboxProps) {
       setMsgs(processedMessages);
     } catch (error) {
       console.error('Error loading messages:', error);
+      onMessages?.([]);
     } finally {
       setLoading(false);
     }
