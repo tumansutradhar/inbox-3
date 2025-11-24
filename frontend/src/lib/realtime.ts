@@ -1,7 +1,3 @@
-import { Aptos, AptosConfig, Network } from '@aptos-labs/ts-sdk';
-const aptosConfig = new AptosConfig({ network: Network.DEVNET });
-const aptos = new Aptos(aptosConfig);
-
 export interface RealtimeMessage {
   type: 'message_sent' | 'message_received';
   sender: string;
@@ -12,7 +8,7 @@ export interface RealtimeMessage {
 
 export class RealtimeService {
   private eventListeners: Map<string, (event: RealtimeMessage) => void> = new Map();
-  private pollingInterval: NodeJS.Timeout | null = null;
+  private pollingInterval: ReturnType<typeof setInterval> | null = null;
   private isPolling = false;
   private lastRequestTime = 0;
 

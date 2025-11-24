@@ -96,10 +96,10 @@ When an event is detected:
 ```jsx
 <div className="flex items-center gap-2">
   <span>Real-time Updates:</span>
-  <button onClick={() => setRealtimeEnabled(!realtimeEnabled)}>
-    {realtimeEnabled ? 'ON' : 'OFF'}
+  <button onClick={toggleRealtime}>
+    {isRealtimeEnabled ? 'ON' : 'OFF'}
   </button>
-  {realtimeEnabled && (
+  {isRealtimeEnabled && (
     <div className="flex items-center gap-1 text-green-600">
       <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
       <span>Live</span>

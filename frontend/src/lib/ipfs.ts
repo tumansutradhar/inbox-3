@@ -95,3 +95,67 @@ export const download = async (cid: string): Promise<string> => {
     return JSON.stringify({ content: 'Error loading message', timestamp: Date.now() });
   }
 };
+
+export const uploadFile = async (file: Blob): Promise<string> => {
+  if (!PINATA_API_KEY || !PINATA_SECRET_KEY) {
+    console.warn('Pinata credentials not configured. Using mock CID for file.');
+    return 'mock-file-cid-' + Date.now();
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const metadata = {
+      name: `inbox3-file-${Date.now()}`,
+      keyvalues: {
+        app: 'inbox3',
+        timestamp: Date.now().toString(),
+        type: file.type
+      }
+    };
+    formData.append('pinataMetadata', JSON.stringify(metadata));
+
+    const response = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
+      method: 'POST',
+      headers: {
+        'pinata_api_key': PINATA_API_KEY,
+        'pinata_secret_api_key': PINATA_SECRET_KEY,
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      throw new Error(`Pinata upload failed: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    console.log('Uploaded file to Pinata:', result.IpfsHash);
+    return result.IpfsHash;
+  } catch (error) {
+    console.error('Pinata file upload failed:', error);
+    throw error;
+  }
+};
+
+export const uploadToPinata = async (content: string, sender: string, type: 'text' | 'audio' = 'text'): Promise<string> => {
+  const data = JSON.stringify({
+    content,
+    sender,
+    timestamp: Date.now(),
+    type
+  });
+  return upload(data);
+};
+
+export const getFromPinata = async (
+  cid: string
+): Promise<{ content: string; sender: string; timestamp: number; type?: 'text' | 'audio' }> => {
+  try {
+    const jsonStr = await download(cid);
+    return JSON.parse(jsonStr);
+  } catch (e) {
+    console.error('Failed to parse message JSON:', e);
+    return { content: 'Failed to load message', sender: 'Unknown', timestamp: Date.now(), type: 'text' };
+  }
+};

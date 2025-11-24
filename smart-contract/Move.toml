@@ -4,7 +4,7 @@ version = "1.0.0"
 authors = []
 
 [addresses]
-inbox3 = "0xf1768eb79d367572b8e436f8e3bcfecf938eeaf6656a65f73773c50c43b71d67"
+inbox3 = "0x2fb49669a943f53c7a0ab469e3fc475b273697f0151554e8321646895ca55d0e"
 
 [dev-addresses]
 
