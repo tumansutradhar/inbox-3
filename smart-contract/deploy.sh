@@ -28,13 +28,13 @@ fi
 
 echo "✅ Contract compiled successfully!"
 
-# Deploy to devnet
-echo "🌐 Deploying to Aptos DevNet..."
-aptos move publish --network devnet
+# Deploy to testnet
+echo "🌐 Deploying to Aptos Testnet..."
+aptos move publish --named-addresses inbox3=default --network testnet
 
 if [ $? -eq 0 ]; then
     echo "✅ Contract deployed successfully!"
-    echo "📝 Don't forget to update the CONTRACT_ADDRESS in your frontend App.tsx"
+    echo "📝 IMPORTANT: Update CONTRACT_ADDRESS in frontend/src/config.ts and inbox3 address in Move.toml with your new address!"
 else
     echo "❌ Contract deployment failed!"
     exit 1

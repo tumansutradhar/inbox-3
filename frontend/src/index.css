@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
 
 * {
   margin: 0;
@@ -8,31 +8,73 @@
 }
 
 :root {
-  --primary-blue: #4F7CFF;
-  --primary-blue-hover: #3A6AFF;
-  --primary-blue-light: #EEF2FF;
-  --text-primary: #1A1A1A;
-  --text-secondary: #6B7280;
-  --text-muted: #9CA3AF;
-  --border-color: #E5E7EB;
-  --bg-gray: #F9FAFB;
-  --bg-white: #FFFFFF;
+  /* Light Mode (Default) */
+  --primary-brand: #FF6B35;
+  /* Off-orange */
+  --primary-brand-hover: #E85D2A;
+  --primary-brand-light: #FFF0EB;
+
+  --bg-main: #FAFAF9;
+  /* Warm off-white */
+  --bg-card: #FFFFFF;
+  --bg-secondary: #F3F4F6;
+
+  --text-primary: #1C1917;
+  --text-secondary: #57534E;
+  --text-muted: #A8A29E;
+
+  --border-color: #E7E5E4;
+
   --success-green: #10B981;
   --warning-yellow: #F59E0B;
   --error-red: #EF4444;
-  --border-radius: 12px;
+
+  --border-radius: 16px;
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-glow: 0 0 20px rgba(255, 107, 53, 0.15);
+}
+
+[data-theme='dark'] {
+  /* Modern Zinc-based Dark Theme */
+  --bg-main: #09090b;
+  /* Deepest background (Zinc 950) */
+  --bg-card: #27272a;
+  /* Card background (Zinc 800) - Lighter for visibility */
+  --bg-secondary: #3f3f46;
+  /* Hover states / Inputs (Zinc 700) */
+
+  --text-primary: #fafafa;
+  /* High contrast text (Zinc 50) */
+  --text-secondary: #d4d4d8;
+  /* Readable secondary text (Zinc 300) */
+  --text-muted: #a1a1aa;
+  /* Muted but visible (Zinc 400) */
+
+  --border-color: #3f3f46;
+  /* Visible borders (Zinc 700) */
+
+  /* Adjust brand color for dark mode visibility if needed */
+  --primary-brand: #FF6B35;
+  --primary-brand-hover: #FF8659;
+  /* Slightly lighter on hover */
+  --primary-brand-light: rgba(255, 107, 53, 0.15);
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 30px rgba(255, 107, 53, 0.2);
 }
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background-color: var(--bg-gray);
+  background-color: var(--bg-main);
   color: var(--text-primary);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .container {
@@ -42,11 +84,46 @@ body {
 }
 
 .card {
-  background: var(--bg-white);
+  background: var(--bg-card);
   border-radius: var(--border-radius);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-primary {
+  background-color: var(--primary-brand);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 4px 6px -1px rgba(255, 107, 53, 0.2);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-brand-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 8px -1px rgba(255, 107, 53, 0.3);
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-outline:hover {
+  border-color: var(--primary-brand);
+  color: var(--primary-brand);
+  background-color: var(--primary-brand-light);
 }
 
 .card:hover {
@@ -86,7 +163,7 @@ body {
 .btn-secondary {
   background: var(--bg-white);
   color: var(--text-primary);
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .btn-secondary:hover:not(:disabled) {
@@ -96,7 +173,7 @@ body {
 .btn-outline {
   background: transparent;
   color: var(--text-secondary);
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .btn-outline:hover:not(:disabled) {
@@ -111,7 +188,7 @@ body {
 .input {
   width: 100%;
   padding: 12px 16px;
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: var(--border-radius);
   font-size: 14px;
   background: var(--bg-white);
@@ -416,7 +493,25 @@ body {
   }
 }
 
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out forwards;
+}
+
 @keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
   from {
     opacity: 0;
     transform: translateY(10px);
@@ -426,10 +521,6 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
 }
 
 .spinner {
@@ -517,7 +608,7 @@ body {
 
 .header {
   background: var(--bg-white);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   padding: 16px 0;
   position: sticky;
   top: 0;
@@ -549,7 +640,7 @@ body {
 .message-item {
   padding: 16px;
   border-radius: var(--border-radius);
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   background: var(--bg-white);
   margin-bottom: 12px;
   transition: all 0.2s ease;
@@ -557,7 +648,7 @@ body {
 }
 
 .message-item:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .message-unread {
@@ -619,11 +710,11 @@ body {
 }
 
 .border-t {
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .border-b {
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .pt-4 {

@@ -1,4 +1,4 @@
-# 🎉 Inbox3 - Decentralized Messaging on Aptos (FULLY WORKING!)
+# Inbox3 - Decentralized Messaging on Aptos
 
 A decentralized messaging application built on the Aptos blockchain with IPFS storage for message content and end-to-end encryption.
 
@@ -6,13 +6,24 @@ A decentralized messaging application built on the Aptos blockchain with IPFS st
 
 **All issues have been resolved and the app is now working perfectly!**
 
-- ✅ Smart contract deployed to Aptos DevNet
+- ✅ Smart contract deployed to Aptos Testnet
 - ✅ All view functions working correctly  
 - ✅ All entry functions working correctly
 - ✅ Frontend integration complete
 - ✅ IPFS storage implemented (with Pinata)
+- ✅ Group Chat & Community Messaging
 - ✅ Error handling improved
 - ✅ Complete documentation provided
+
+## 📚 Documentation
+
+Detailed documentation can be found in the `docs/` directory:
+
+- [How to Run](docs/HOW_TO_RUN.md)
+- [Pinata Setup](docs/PINATA_SETUP.md)
+- [Realtime System](docs/REALTIME_SYSTEM.md)
+- [Troubleshooting](docs/TROUBLESHOOTING.md)
+- [Rate Limit Fix](docs/RATE_LIMIT_FIX.md)
 
 ## 🚀 Quick Start
 
@@ -68,23 +79,6 @@ A decentralized messaging application built on the Aptos blockchain with IPFS st
    cp .env.example .env
    ```
    
-   Edit `.env` and add your Pinata credentials:
-   ```
-   VITE_PINATA_API_KEY=your_pinata_api_key_here
-   VITE_PINATA_SECRET_KEY=your_pinata_secret_key_here
-   ```
-   
-   **Get Pinata credentials:** See `PINATA_SETUP.md` for detailed instructions.
-
-3. **Run development server**:
-   ```bash
-   pnpm dev
-   ```
-
-### Smart Contract Setup
-
-1. **Install Aptos CLI**:
-   ```bash
    curl -fsSL "https://aptos.dev/scripts/install_cli.py" | python3
    ```
 
@@ -171,6 +165,78 @@ inbox3/
 - User profiles and contacts
 - Message search and filtering
 - Mobile responsive design improvements
+
+## Recent Updates
+
+### UI and Audio Recording Improvements
+
+#### Changes Made
+
+##### 1. Audio Recording Functionality Fixed
+
+**GroupChat.tsx**
+- **Enhanced audio recording quality**: Added audio constraints for echo cancellation, noise suppression, and 44.1kHz sample rate
+- **Better codec support**: Implemented fallback logic for audio codecs (prefers 'audio/webm;codecs=opus', falls back to 'audio/webm' or default)
+- **Proper stream cleanup**: Ensured audio tracks are stopped after recording completes
+- **Improved audio playback**: Enhanced audio element with multiple source types, better error handling, and direct IPFS URL links
+- **Fixed metadata storage**: Audio URLs are now properly stored in JSON format with type detection
+
+**SendMessage.tsx**
+- Applied same audio recording improvements as GroupChat.tsx
+- Enhanced codec detection and fallback logic
+- Better error handling and stream management
+
+##### 2. UI Improvements - Cleaner Design
+
+**Layout Changes in GroupChat.tsx**
+- **Repositioned controls**: Input field, recording, and send buttons now positioned side-by-side for better UX
+- **Reduced container height**: Changed from 600px to 550px to match inbox size
+- **Removed auto-scroll**: Chat no longer auto-scrolls on polling (only when sending messages)
+- **Removed heavy borders**: Replaced with subtle shadows and light border colors
+- **Better visual feedback**: Added emojis to status messages (🎤 Recording, ⬆️ Uploading, ✅ Sent, ❌ Error)
+- **Larger input area**: Increased input field to 56px height with bigger buttons for better usability
+
+**Global CSS Updates (index.css)**
+- `.card`: Removed heavy borders, replaced with lighter shadows
+- `.input`: Changed to subtle `rgba(0, 0, 0, 0.08)` borders
+- `.message-item`: Lighter borders and hover effects
+- Overall minimalist approach with reduced visual clutter
+
+##### 3. Design Philosophy
+- **Minimalist approach**: Reduced visual clutter by minimizing borders
+- **Subtle separators**: Used very light borders only where necessary
+- **Enhanced shadows**: Relied on subtle shadows for depth instead of borders
+- **Better spacing**: Improved visual hierarchy through spacing
+- **Focus states**: Maintained clear focus indicators for accessibility
+
+#### Testing Audio Recording
+
+1. Start the development server: `npm run dev` in the frontend directory
+2. Test audio recording:
+   - Click the microphone button
+   - Allow microphone permissions
+   - Record a message
+   - Stop recording
+   - Verify audio playback in the message thread
+   - Use "Open in new tab" link if browser playback fails
+3. Check UI improvements:
+   - Verify reduced border usage throughout the app
+   - Confirm recording and send buttons are positioned side-by-side
+   - Check that inputs are larger and more visible
+
+#### Browser Compatibility
+
+Audio recording now supports:
+- Chrome/Edge: `audio/webm;codecs=opus` (best quality)
+- Firefox: `audio/webm` (good quality)
+- Safari: Falls back to default codec (basic support)
+
+#### Notes
+
+- Audio files are stored on IPFS via Pinata gateway
+- If audio doesn't play inline, use the "Open in new tab" link
+- The recording button shows elapsed time during recording
+- Console logs help debug audio upload and playback issues
 
 ## Contributing
 
