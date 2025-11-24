@@ -44,7 +44,8 @@ module inbox3::Inbox3Tests {
 
         // 4. User1 sends a message
         let cid = b"QmTest123";
-        Inbox3::send_group_message(user1, group_addr, cid);
+        let parent_id = vector::empty<u8>();
+        Inbox3::send_group_message(user1, group_addr, cid, parent_id);
         
         // 5. Verify message
         let messages = Inbox3::get_group_messages(group_addr);

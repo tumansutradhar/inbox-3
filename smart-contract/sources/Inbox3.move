@@ -26,6 +26,7 @@ module inbox3::Inbox3 {
         sender: address,
         cid: vector<u8>,
         timestamp: u64,
+        parent_id: vector<u8>,
     }
 
     /// A group chat resource
@@ -130,7 +131,7 @@ module inbox3::Inbox3 {
     }
 
     /// Send a message to a group
-    public entry fun send_group_message(sender: &signer, group_addr: address, cid: vector<u8>) acquires Group {
+    public entry fun send_group_message(sender: &signer, group_addr: address, cid: vector<u8>, parent_id: vector<u8>) acquires Group {
         assert!(exists<Group>(group_addr), 4);
         let sender_addr = signer::address_of(sender);
         let group = borrow_global_mut<Group>(group_addr);
@@ -145,6 +146,7 @@ module inbox3::Inbox3 {
             sender: sender_addr,
             cid,
             timestamp: timestamp::now_seconds(),
+            parent_id,
         };
         table::add(&mut group.messages, id, msg);
     }

@@ -2,9 +2,9 @@
 
 A decentralized messaging application built on the Aptos blockchain with IPFS storage for message content and end-to-end encryption.
 
-## ✅ STATUS: FULLY FUNCTIONAL
+## ✅ STATUS: FULLY FUNCTIONAL + ENHANCED
 
-**All issues have been resolved and the app is now working perfectly!**
+**All issues have been resolved and the app now includes advanced features!**
 
 - ✅ Smart contract deployed to Aptos Testnet
 - ✅ All view functions working correctly  
@@ -12,7 +12,11 @@ A decentralized messaging application built on the Aptos blockchain with IPFS st
 - ✅ Frontend integration complete
 - ✅ IPFS storage implemented (with Pinata)
 - ✅ Group Chat & Community Messaging
-- ✅ Error handling improved
+- ✅ **NEW: Enhanced End-to-End Encryption**
+- ✅ **NEW: Message Threading and Replies**
+- ✅ **NEW: User Profiles and Contacts**
+- ✅ **NEW: Message Search and Filtering**
+- ✅ **NEW: Mobile Responsive Design**
 - ✅ Complete documentation provided
 
 ## 📚 Documentation
@@ -237,6 +241,72 @@ Audio recording now supports:
 - If audio doesn't play inline, use the "Open in new tab" link
 - The recording button shows elapsed time during recording
 - Console logs help debug audio upload and playback issues
+
+---
+
+## 🆕 Enhanced Features (v2.0)
+
+See [ENHANCED_FEATURES.md](ENHANCED_FEATURES.md) for complete documentation.
+
+### 1. Enhanced End-to-End Encryption
+- **Persistent key management** with automatic generation and storage
+- **NaCl Box encryption** (Curve25519 + XSalsa20-Poly1305)
+- **Public key sharing** for secure communication
+- **Automatic key initialization** on wallet connect
+- File: `frontend/src/lib/encryptionManager.ts`
+
+### 2. Message Threading and Replies
+- **Hierarchical message organization** with parent-child relationships
+- **Reply count tracking** for each message
+- **Thread visualization** support
+- **Flat view compatibility** for backward compatibility
+- File: `frontend/src/lib/threadManager.ts`
+
+### 3. User Profiles and Contacts
+- **Profile management**: Username, avatar (IPFS), bio
+- **Contact address book** with search and notes
+- **Avatar upload** to IPFS (max 5MB)
+- **Quick messaging** from contacts
+- Files: `frontend/src/lib/profileManager.ts`, `frontend/src/components/ProfileEditor.tsx`, `frontend/src/components/ContactsList.tsx`
+
+### 4. Message Search and Filtering
+- **Full-text search** across messages and senders
+- **Advanced filters**: sender, date range, message type
+- **Sort options**: newest, oldest, by sender
+- **Statistics dashboard**: message counts, unique senders
+- **Export results** to JSON
+- Files: `frontend/src/lib/messageSearcher.ts`, `frontend/src/components/MessageSearch.tsx`
+
+### 5. Mobile Responsive Design
+- **Responsive layouts** for all screen sizes (mobile to desktop)
+- **Touch-optimized buttons** (48px minimum touch targets)
+- **Flexible typography** that scales with viewport
+- **Adaptive spacing** and padding for different screens
+- **Touch gestures** with active states and feedback
+- Enhanced: `frontend/src/components/GroupChat.tsx`
+
+### Feature Integration
+All features are modular and can be used independently or together:
+
+```typescript
+// Encryption
+import { encryptionManager } from './lib/encryptionManager';
+await encryptionManager.initializeKeys(address);
+
+// Threading
+import { threadManager } from './lib/threadManager';
+threadManager.addMessage(sender, content, timestamp, parentId);
+
+// Profiles
+import { profileManager } from './lib/profileManager';
+profileManager.createProfile(address, username);
+
+// Search
+import { messageSearcher } from './lib/messageSearcher';
+messageSearcher.search(messages, filters, sortOrder);
+```
+
+---
 
 ## Contributing
 

@@ -1,8 +1,45 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useWallet } from '@aptos-labs/wallet-adapter-react'
 import { uploadToPinata, getFromPinata, uploadFile } from '../lib/ipfs'
 import { getRealtimeService, type RealtimeMessage } from '../lib/realtime'
 import { aptos } from '../config'
+import type { ReplyTarget } from '../types/reply'
+
+const textDecoder = new TextDecoder()
+
+const hexToUtf8 = (hex: string): string => {
+    let result = ''
+    for (let i = 0; i < hex.length; i += 2) {
+        const byte = hex.slice(i, i + 2)
+        result += String.fromCharCode(parseInt(byte, 16))
+    }
+    return result
+}
+
+const decodeVectorLike = (value: unknown): string => {
+    if (!value) return ''
+    if (typeof value === 'string') {
+        if (value.startsWith('0x')) {
+            return hexToUtf8(value.slice(2))
+        }
+        return value
+    }
+    if (Array.isArray(value)) {
+        return textDecoder.decode(new Uint8Array(value))
+    }
+    if (value instanceof Uint8Array) {
+        return textDecoder.decode(value)
+    }
+    if (value instanceof ArrayBuffer) {
+        return textDecoder.decode(new Uint8Array(value))
+    }
+    return String(value)
+}
+
+const encodeParentIdBytes = (parentId?: string | null): number[] => {
+    if (!parentId) return []
+    return Array.from(new TextEncoder().encode(parentId))
+}
 
 interface GroupChatProps {
     contractAddress: string
@@ -36,6 +73,7 @@ export default function GroupChat({ contractAddress, groupAddr, onBack }: GroupC
     const [copyStatus, setCopyStatus] = useState<string | null>(null)
     const [audioStatus, setAudioStatus] = useState<'idle' | 'recording' | 'uploading' | 'sent' | 'error'>('idle')
     const [audioError, setAudioError] = useState<string | null>(null)
+    const [replyTarget, setReplyTarget] = useState<ReplyTarget | null>(null)
 
     useEffect(() => {
         if (!groupAddr || !account) return
@@ -86,6 +124,15 @@ export default function GroupChat({ contractAddress, groupAddr, onBack }: GroupC
         const mins = Math.floor(seconds / 60)
         const secs = seconds % 60
         return `${mins}:${secs.toString().padStart(2, '0')}`
+    }
+
+    const truncateSnippet = (text: string, maxLength = 80) => {
+        if (!text) return ''
+        return text.length > maxLength ? `${text.slice(0, maxLength)}…` : text
+    }
+
+    const createMessageId = (sender: string, timestampSeconds: number, index: number) => {
+        return `group-${sender}-${timestampSeconds}-${index}`
     }
 
     useEffect(() => {
@@ -147,22 +194,13 @@ export default function GroupChat({ contractAddress, groupAddr, onBack }: GroupC
                     let parentId: string | null = null
 
                     try {
-                        let cidString = ''
-                        if (typeof msg.cid === 'string' && msg.cid.startsWith('0x')) {
-                            const hexString = msg.cid.slice(2)
-                            for (let i = 0; i < hexString.length; i += 2) {
-                                cidString += String.fromCharCode(parseInt(hexString.slice(i, i + 2), 16))
-                            }
-                        } else if (Array.isArray(msg.cid)) {
-                            cidString = new TextDecoder().decode(new Uint8Array(msg.cid))
-                        } else {
-                            cidString = String(msg.cid)
-                        }
+                        const cidString = decodeVectorLike(msg.cid)
 
                         const data = await getFromPinata(cidString)
                         content = data.content
                         type = data.type || 'text'
-                        parentId = data.parentId ?? null
+                        const chainParentId = decodeVectorLike(msg.parent_id ?? msg.parentId)
+                        parentId = data.parentId ?? (chainParentId || null)
 
                         if (type === 'audio') {
                             console.log('Audio message found:', content)
@@ -172,12 +210,13 @@ export default function GroupChat({ contractAddress, groupAddr, onBack }: GroupC
                         content = 'Failed to load message'
                     }
 
-                    const messageId = `group-${index}`
+                    const timestampSeconds = parseInt(msg.timestamp)
+                    const messageId = createMessageId(msg.sender, timestampSeconds, index)
                     return {
                         id: messageId,
                         sender: msg.sender,
                         content,
-                        timestamp: parseInt(msg.timestamp) * 1000,
+                        timestamp: timestampSeconds * 1000,
                         isSelf: msg.sender === account.address,
                         type,
                         parentId
@@ -284,20 +323,22 @@ export default function GroupChat({ contractAddress, groupAddr, onBack }: GroupC
                 timestamp: Date.now()
             })
 
-            const metadataCid = await uploadToPinata(messageData, account.address.toString(), 'audio')
+            const metadataCid = await uploadToPinata(messageData, account.address.toString(), 'audio', replyTarget?.id)
             console.log('Message metadata CID:', metadataCid, 'Audio URL:', audioUrl)
 
+            const parentBytes = encodeParentIdBytes(replyTarget?.id)
             const response = await signAndSubmitTransaction({
                 data: {
                     function: `${contractAddress}::Inbox3::send_group_message`,
                     typeArguments: [],
-                    functionArguments: [groupAddr, Array.from(new TextEncoder().encode(metadataCid))]
+                    functionArguments: [groupAddr, Array.from(new TextEncoder().encode(metadataCid)), parentBytes]
                 }
             })
 
             await aptos.waitForTransaction({ transactionHash: response.hash })
             await fetchMessages()
             setTimeout(() => scrollToBottom(), 100)
+            setReplyTarget(null)
         } finally {
             setSending(false)
         }
@@ -309,12 +350,12 @@ export default function GroupChat({ contractAddress, groupAddr, onBack }: GroupC
 
         setSending(true)
         try {
-            const cid = await uploadToPinata(newMessage, account.address.toString(), 'text')
+            const cid = await uploadToPinata(newMessage, account.address.toString(), 'text', replyTarget?.id)
             const response = await signAndSubmitTransaction({
                 data: {
                     function: `${contractAddress}::Inbox3::send_group_message`,
                     typeArguments: [],
-                    functionArguments: [groupAddr, Array.from(new TextEncoder().encode(cid))]
+                    functionArguments: [groupAddr, Array.from(new TextEncoder().encode(cid)), encodeParentIdBytes(replyTarget?.id)]
                 }
             })
 
@@ -322,6 +363,7 @@ export default function GroupChat({ contractAddress, groupAddr, onBack }: GroupC
             setNewMessage('')
             await fetchMessages()
             setTimeout(() => scrollToBottom(), 100)
+            setReplyTarget(null)
         } catch (error) {
             console.error('Error sending message:', error)
             alert('Failed to send message')
@@ -329,6 +371,12 @@ export default function GroupChat({ contractAddress, groupAddr, onBack }: GroupC
             setSending(false)
         }
     }
+
+    const messageLookup = useMemo(() => {
+        const map = new Map<string, GroupMessage>()
+        messages.forEach((msg) => map.set(msg.id, msg))
+        return map
+    }, [messages])
 
     return (
         <div className="relative flex flex-col h-[550px] md:h-[600px] lg:h-[650px] overflow-hidden animate-fade-in" style={{ background: 'var(--bg-main)', borderRadius: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
@@ -366,71 +414,108 @@ export default function GroupChat({ contractAddress, groupAddr, onBack }: GroupC
             )}
 
             <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4" style={{ background: '#f5f7fa' }}>
-                {messages.map((msg, idx) => (
-                    <div key={idx} className={`flex flex-col ${msg.isSelf ? 'items-end' : 'items-start'} animate-slide-up`}>
-                        <div className={`rounded-2xl ${msg.isSelf
-                            ? 'bg-(--primary-brand) text-white'
-                            : 'bg-white text-(--text-primary)'
-                            }`} style={{
-                                border: 'none',
-                                padding: msg.type === 'audio' ? '12px' : '12px 16px',
-                                maxWidth: '85%',
-                                minWidth: msg.type === 'audio' ? 'min(320px, 100%)' : '80px',
-                                boxShadow: msg.isSelf ? '0 2px 12px rgba(0,0,0,0.12)' : '0 2px 12px rgba(0,0,0,0.08)',
-                                borderRadius: msg.isSelf ? '18px 18px 4px 18px' : '18px 18px 18px 4px'
-                            }}>
-                            {msg.type === 'audio' ? (
-                                <div className="flex flex-col gap-2">
-                                    <audio
-                                        controls
-                                        preload="metadata"
-                                        controlsList="nodownload"
-                                        onError={(e) => {
-                                            console.error('Audio playback error:', e.currentTarget.error, 'URL:', msg.content)
-                                        }}
-                                        onCanPlay={() => {
-                                            console.log('Audio can play:', msg.content)
-                                        }}
-                                        style={{
-                                            width: '100%',
-                                            height: '54px',
-                                            borderRadius: '12px',
-                                            outline: 'none'
-                                        }}
-                                    >
-                                        <source src={msg.content} type="audio/webm" />
-                                        <source src={msg.content} type="audio/wav" />
-                                        <source src={msg.content} type="audio/mp3" />
-                                        Your browser does not support audio playback.
-                                    </audio>
-                                    <a
-                                        href={msg.content}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-[10px] opacity-70 hover:opacity-100 underline"
-                                    >
-                                        Open in new tab
-                                    </a>
+                {messages.map((msg) => {
+                    const parentMessage = msg.parentId ? messageLookup.get(msg.parentId) : null
+                    const replySnippet = msg.type === 'audio' ? 'Audio message' : msg.content
+                    return (
+                        <div key={msg.id} className={`flex flex-col ${msg.isSelf ? 'items-end' : 'items-start'} animate-slide-up`}>
+                            {parentMessage && (
+                                <div className="mb-1 max-w-[80%] rounded-xl px-3 py-2 border border-dashed border-(--border-color) bg-white/70 text-[11px] text-(--text-muted)">
+                                    <span className="font-semibold text-(--text-primary)">↩️ replying to {parentMessage.sender.slice(0, 6)}...</span>
+                                    <p className="mt-1 text-[11px] text-(--text-secondary)">{truncateSnippet(parentMessage.content)}</p>
                                 </div>
-                            ) : (
-                                <p className="text-sm leading-relaxed wrap-break-word" style={{ wordBreak: 'break-word', overflowWrap: 'break-word', margin: 0 }}>{msg.content}</p>
                             )}
+                            <div className={`rounded-2xl ${msg.isSelf
+                                ? 'bg-(--primary-brand) text-white'
+                                : 'bg-white text-(--text-primary)'
+                                } ${replyTarget?.id === msg.id ? 'ring-2 ring-(--primary-brand)' : ''}`} style={{
+                                    border: 'none',
+                                    padding: msg.type === 'audio' ? '12px' : '12px 16px',
+                                    maxWidth: '85%',
+                                    minWidth: msg.type === 'audio' ? 'min(320px, 100%)' : '80px',
+                                    boxShadow: msg.isSelf ? '0 2px 12px rgba(0,0,0,0.12)' : '0 2px 12px rgba(0,0,0,0.08)',
+                                    borderRadius: msg.isSelf ? '18px 18px 4px 18px' : '18px 18px 18px 4px'
+                                }}>
+                                {msg.type === 'audio' ? (
+                                    <div className="flex flex-col gap-2">
+                                        <audio
+                                            controls
+                                            preload="metadata"
+                                            controlsList="nodownload"
+                                            onError={(e) => {
+                                                console.error('Audio playback error:', e.currentTarget.error, 'URL:', msg.content)
+                                            }}
+                                            onCanPlay={() => {
+                                                console.log('Audio can play:', msg.content)
+                                            }}
+                                            style={{
+                                                width: '100%',
+                                                height: '54px',
+                                                borderRadius: '12px',
+                                                outline: 'none'
+                                            }}
+                                        >
+                                            <source src={msg.content} type="audio/webm" />
+                                            <source src={msg.content} type="audio/wav" />
+                                            <source src={msg.content} type="audio/mp3" />
+                                            Your browser does not support audio playback.
+                                        </audio>
+                                        <a
+                                            href={msg.content}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-[10px] opacity-70 hover:opacity-100 underline"
+                                        >
+                                            Open in new tab
+                                        </a>
+                                    </div>
+                                ) : (
+                                    <p className="text-sm leading-relaxed wrap-break-word" style={{ wordBreak: 'break-word', overflowWrap: 'break-word', margin: 0 }}>{msg.content}</p>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-2 mt-1.5 px-2">
+                                <span className="text-[11px] text-(--text-muted) opacity-70">
+                                    {msg.isSelf ? 'You' : `${msg.sender.slice(0, 6)}...`}
+                                </span>
+                                <span className="text-[11px] text-(--text-muted) opacity-70">•</span>
+                                <span className="text-[11px] text-(--text-muted) opacity-70">
+                                    {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => setReplyTarget({
+                                        id: msg.id,
+                                        sender: msg.sender,
+                                        snippet: replySnippet
+                                    })}
+                                    className="ml-auto text-[11px] font-semibold text-(--primary-brand) hover:text-(--primary-brand-hover)">
+                                    Reply
+                                </button>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-2 mt-1.5 px-2">
-                            <span className="text-[11px] text-(--text-muted) opacity-70">
-                                {msg.isSelf ? 'You' : `${msg.sender.slice(0, 6)}...`}
-                            </span>
-                            <span className="text-[11px] text-(--text-muted) opacity-70">•</span>
-                            <span className="text-[11px] text-(--text-muted) opacity-70">
-                                {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                        </div>
-                    </div>
-                ))}
+                    )
+                })}
                 <div ref={messagesEndRef} />
             </div>
 
             <div className="p-3 sm:p-4 md:p-6 space-y-2 sm:space-y-3" style={{ background: 'white', borderTop: '1px solid #e5e7eb' }}>
+                {replyTarget && (
+                    <div className="flex flex-col gap-1 rounded-2xl border border-(--border-color) bg-(--bg-card) p-3 text-[12px]">
+                        <div className="flex items-center justify-between gap-3">
+                            <span className="text-[11px] text-(--text-muted)">Replying to {replyTarget.sender.slice(0, 6)}...</span>
+                            <button
+                                type="button"
+                                onClick={() => setReplyTarget(null)}
+                                className="text-[11px] font-semibold text-(--primary-brand) hover:underline"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                        <p className="text-sm text-(--text-primary)" style={{ margin: 0 }}>
+                            {truncateSnippet(replyTarget.snippet, 120)}
+                        </p>
+                    </div>
+                )}
                 <form onSubmit={handleSend} className="flex gap-2 sm:gap-3 items-center">
                     <input
                         type="text"

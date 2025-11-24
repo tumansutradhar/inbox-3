@@ -5,11 +5,6 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  test: {
-    environment: 'jsdom',
-    globals: true,
-    include: ['tests/**/*.test.ts']
-  },
   build: {
     chunkSizeWarningLimit: 2000,
     rollupOptions: {
