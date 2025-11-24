@@ -276,7 +276,7 @@ export default function GroupChat({ contractAddress, groupAddr, onBack }: GroupC
                 sender: account.address.toString(),
                 timestamp: Date.now()
             })
-            
+
             const metadataCid = await uploadToPinata(messageData, account.address.toString(), 'audio')
             console.log('Message metadata CID:', metadataCid, 'Audio URL:', audioUrl)
 
@@ -395,9 +395,9 @@ export default function GroupChat({ contractAddress, groupAddr, onBack }: GroupC
                                         <source src={msg.content} type="audio/mp3" />
                                         Your browser does not support audio playback.
                                     </audio>
-                                    <a 
-                                        href={msg.content} 
-                                        target="_blank" 
+                                    <a
+                                        href={msg.content}
+                                        target="_blank"
                                         rel="noopener noreferrer"
                                         className="text-[10px] opacity-70 hover:opacity-100 underline"
                                     >

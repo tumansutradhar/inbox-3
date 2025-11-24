@@ -6,13 +6,24 @@ A decentralized messaging application built on the Aptos blockchain with IPFS st
 
 **All issues have been resolved and the app is now working perfectly!**
 
-- ✅ Smart contract deployed to Aptos DevNet
+- ✅ Smart contract deployed to Aptos Testnet
 - ✅ All view functions working correctly  
 - ✅ All entry functions working correctly
 - ✅ Frontend integration complete
 - ✅ IPFS storage implemented (with Pinata)
+- ✅ Group Chat & Community Messaging
 - ✅ Error handling improved
 - ✅ Complete documentation provided
+
+## 📚 Documentation
+
+Detailed documentation can be found in the `docs/` directory:
+
+- [How to Run](docs/HOW_TO_RUN.md)
+- [Pinata Setup](docs/PINATA_SETUP.md)
+- [Realtime System](docs/REALTIME_SYSTEM.md)
+- [Troubleshooting](docs/TROUBLESHOOTING.md)
+- [Rate Limit Fix](docs/RATE_LIMIT_FIX.md)
 
 ## 🚀 Quick Start
 
