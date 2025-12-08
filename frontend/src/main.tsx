@@ -2,7 +2,7 @@ import { StrictMode, Component } from 'react'
 import type { ReactNode, ErrorInfo } from 'react'
 import { createRoot } from 'react-dom/client'
 import { AptosWalletAdapterProvider } from '@aptos-labs/wallet-adapter-react'
-import { Network } from '@aptos-labs/ts-sdk'
+import { NETWORK } from './config'
 import App from './App.tsx'
 import './index.css'
 
@@ -79,7 +79,7 @@ root.render(
       <AptosWalletAdapterProvider
         autoConnect={false}
         dappConfig={{
-          network: Network.TESTNET,
+          network: NETWORK,
           aptosConnectDappId: 'inbox3-dapp'
         }}
         onError={(error) => {
