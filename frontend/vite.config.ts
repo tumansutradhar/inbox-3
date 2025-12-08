@@ -6,31 +6,32 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   optimizeDeps: {
-    // Pre-bundle Aptos SDK to avoid circular dependency issues
-    include: ['@aptos-labs/ts-sdk', '@aptos-labs/wallet-adapter-react'],
+    // Pre-bundle dependencies to avoid ESM/CJS issues
+    include: ['@aptos-labs/ts-sdk', '@aptos-labs/wallet-adapter-react', 'tweetnacl', 'eventemitter3'],
     esbuildOptions: {
-      // Needed for Aptos SDK
       target: 'esnext'
     }
   },
   build: {
     chunkSizeWarningLimit: 2000,
     target: 'esnext',
+    commonjsOptions: {
+      // Transform CommonJS modules to ESM
+      transformMixedEsModules: true,
+      include: [/node_modules/]
+    },
     rollupOptions: {
       output: {
         manualChunks(id: string) {
           if (!id.includes('node_modules')) {
             return undefined
           }
-          // Don't split Aptos packages to avoid circular dependency issues
-          if (id.includes('@aptos-labs')) {
+          // Keep all Aptos-related packages together to avoid initialization order issues
+          if (id.includes('@aptos-labs') || id.includes('tweetnacl') || id.includes('eventemitter3')) {
             return 'vendor_aptos'
           }
           if (id.includes('react')) {
             return 'vendor_react'
-          }
-          if (id.includes('tweetnacl')) {
-            return 'vendor_crypto'
           }
           if (id.includes('tailwindcss')) {
             return 'vendor_tailwind'
