@@ -7,7 +7,7 @@
 [![IPFS](https://img.shields.io/badge/IPFS-Storage-65C2CB?style=for-the-badge)](https://ipfs.io/)
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000000?style=for-the-badge&logo=vercel)](https://frontend-virid-sigma-33.vercel.app)
 
-**A fully-featured, production-ready decentralized messaging application built on Aptos blockchain with IPFS storage.**
+**A fully-featured decentralized messaging application built on Aptos blockchain with IPFS storage.**
 
 ### 🌐 [Try it Live →](https://inbox3-aptos.vercel.app)
 
