@@ -161,8 +161,8 @@ export default function SettingsPanel({ isOpen, onClose, onSettingsChange }: Set
                                                         updateSetting('dndDays', newDays)
                                                     }}
                                                     className={`w-8 h-8 rounded-full text-xs font-medium transition-colors ${settings.dndDays.includes(index)
-                                                            ? 'bg-(--primary-brand) text-white'
-                                                            : 'bg-(--bg-secondary) text-(--text-muted) hover:bg-(--bg-tertiary)'
+                                                        ? 'bg-(--primary-brand) text-white'
+                                                        : 'bg-(--bg-secondary) text-(--text-muted) hover:bg-(--bg-tertiary)'
                                                         }`}
                                                 >
                                                     {day}

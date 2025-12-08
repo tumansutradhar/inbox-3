@@ -93,8 +93,8 @@ export default function EmojiPicker({ onSelect, position = 'bottom' }: EmojiPick
                                     key={cat}
                                     onClick={() => setActiveCategory(cat as keyof typeof EMOJI_CATEGORIES)}
                                     className={`px-3 py-1 text-xs rounded-full whitespace-nowrap transition-colors ${activeCategory === cat
-                                            ? 'bg-(--primary-brand) text-white'
-                                            : 'bg-(--bg-secondary) text-(--text-secondary) hover:text-(--text-primary)'
+                                        ? 'bg-(--primary-brand) text-white'
+                                        : 'bg-(--bg-secondary) text-(--text-secondary) hover:text-(--text-primary)'
                                         }`}
                                 >
                                     {cat}

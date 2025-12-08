@@ -42,7 +42,7 @@ export default function StickerPicker({ onSelect, onClose }: StickerPickerProps)
     const [activePack, setActivePack] = useState(STICKER_PACKS[0])
 
     return (
-        <div className="absolute bottom-full mb-2 left-0 w-72 bg-(--bg-card) rounded-2xl shadow-xl border border-(--border-color) overflow-hidden animate-scale-in z-[120]">
+        <div className="absolute bottom-full mb-2 left-0 w-72 bg-(--bg-card) rounded-2xl shadow-xl border border-(--border-color) overflow-hidden animate-scale-in z-120">
             {/* Pack Selector */}
             <div className="flex overflow-x-auto p-2 bg-(--bg-secondary) border-b border-(--border-color) scrollbar-hide">
                 {STICKER_PACKS.map(pack => (
@@ -50,8 +50,8 @@ export default function StickerPicker({ onSelect, onClose }: StickerPickerProps)
                         key={pack.id}
                         onClick={() => setActivePack(pack)}
                         className={`px-3 py-1 text-xs font-medium rounded-full whitespace-nowrap mr-2 transition-colors ${activePack.id === pack.id
-                                ? 'bg-(--primary-brand) text-white'
-                                : 'bg-(--bg-card) text-(--text-secondary) hover:bg-gray-200 dark:hover:bg-gray-700'
+                            ? 'bg-(--primary-brand) text-white'
+                            : 'bg-(--bg-card) text-(--text-secondary) hover:bg-gray-200 dark:hover:bg-gray-700'
                             }`}
                     >
                         {pack.name}
