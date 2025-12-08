@@ -19,13 +19,13 @@
 
 **Inbox3 is now a complete, production-ready decentralized messaging platform with 40+ features!**
 
-### ✅ Core Infrastructure
-- ✅ Smart contract deployed to Aptos Testnet
-- ✅ All blockchain functions tested and working
-- ✅ IPFS integration with Pinata
-- ✅ Real-time message synchronization
-- ✅ Offline support with automatic sync
-- ✅ Cross-browser compatibility
+###  Core Infrastructure
+-  Smart contract deployed to Aptos Testnet
+-  All blockchain functions tested and working
+-  IPFS integration with Pinata
+-  Real-time message synchronization
+-  Offline support with automatic sync
+-  Cross-browser compatibility
 
 ---
 
