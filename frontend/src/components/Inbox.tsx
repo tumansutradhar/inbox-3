@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { aptos, CONTRACT_ADDRESS } from '../config';
+import { Card, Avatar, Button, Spinner, Skeleton, EmptyState, Badge } from './ui';
 
 interface Message {
   sender: string;
@@ -153,76 +154,98 @@ export default function Inbox({ refreshKey, onMessages }: InboxProps) {
 
   if (loading) {
     return (
-      <div className="card p-6">
-        <div className="flex items-center justify-center py-8">
-          <div className="spinner"></div>
-          <span className="ml-2 text-secondary">Loading messages...</span>
+      <Card className="p-6">
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex items-start gap-3">
+              <Skeleton variant="circular" width={40} height={40} />
+              <div className="flex-1 space-y-2">
+                <Skeleton variant="text" width="60%" height={16} />
+                <Skeleton variant="text" width="100%" height={14} />
+                <Skeleton variant="text" width="80%" height={14} />
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
+        <div className="flex items-center justify-center mt-4 pt-4 border-t border-(--border-color)">
+          <Spinner size="sm" />
+          <span className="ml-2 text-sm text-(--text-secondary)">Loading messages...</span>
+        </div>
+      </Card>
     );
   }
 
   return (
     <div>
       {msgs.length === 0 ? (
-        <div className="p-6 text-center border border-dashed border-(--border-color) rounded-2xl bg-(--bg-secondary)">
-          <h3 className="font-medium text-primary mb-2">No messages yet</h3>
-          <p className="text-secondary text-sm">
-            Your inbox is empty. Messages will appear here once you receive them.
-          </p>
-        </div>
+        <EmptyState
+          icon={
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <polyline points="22,6 12,13 2,6" />
+            </svg>
+          }
+          title="No messages yet"
+          description="Your inbox is empty. Messages will appear here once you receive them."
+        />
       ) : (
-        <div className="inbox-container">
-          <div className="space-y-0">
+        <Card className="overflow-hidden">
+          <div className="divide-y divide-(--border-color)">
             {msgs.map((m, index) => (
-              <div key={index} className={`message-item ${!m.read ? 'message-unread' : ''}`}>
+              <div
+                key={index}
+                className={`p-4 transition-colors hover:bg-(--bg-secondary) ${!m.read ? 'bg-(--primary-brand-light)' : ''}`}
+              >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="avatar">
-                      {m.sender.slice(2, 4).toUpperCase()}
-                    </div>
+                    <Avatar
+                      address={m.sender}
+                      size="md"
+                      status={!m.read ? 'online' : undefined}
+                    />
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-medium text-primary text-sm" title={m.sender}>
+                        <span className="font-medium text-(--text-primary) text-sm" title={m.sender}>
                           {m.sender.slice(0, 6)}...{m.sender.slice(-4)}
                         </span>
                         <button
                           onClick={() => copyToClipboard(m.sender)}
                           className="text-xs text-(--text-secondary) hover:text-(--primary-brand) transition-colors"
                           title="Copy Address"
+                          aria-label="Copy sender address"
                         >
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                           </svg>
                         </button>
-                        <div className="w-1 h-1 bg-muted rounded-full"></div>
-                        <span className="text-xs text-muted">
+                        <span className="text-xs text-(--text-muted)">•</span>
+                        <span className="text-xs text-(--text-muted)">
                           {new Date(m.timestamp * 1000).toLocaleString()}
                         </span>
                       </div>
-                      <span className="text-[11px] font-mono text-(--text-secondary) break-all select-all">
+                      <span className="text-[11px] font-mono text-(--text-secondary) break-all select-all hidden sm:block">
                         {m.sender}
                       </span>
                     </div>
                   </div>
                   {!m.read && (
-                    <div className="w-2 h-2 bg-[#FF591B] rounded-full"></div>
+                    <Badge variant="warning" size="sm">New</Badge>
                   )}
                 </div>
-                <div className="message-content">
+                <div className="ml-[52px]">
                   {m.type === 'audio' ? (
                     <audio controls src={m.plain} className="w-full mt-2" />
                   ) : (
-                    <p className="text-sm text-(--text-primary)">{m.plain}</p>
+                    <p className="text-sm text-(--text-primary) leading-relaxed">{m.plain}</p>
                   )}
                 </div>
-                <div className="flex items-center justify-between mt-3">
+                <div className="flex items-center justify-between mt-3 ml-[52px]">
                   <a
                     href={`https://explorer.aptoslabs.com/account/${CONTRACT_ADDRESS}?network=testnet`}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-xs text-(--primary-brand) hover:underline opacity-50 hover:opacity-100 transition-opacity flex items-center gap-1"
+                    className="text-xs text-(--primary-brand) hover:underline opacity-60 hover:opacity-100 transition-opacity flex items-center gap-1"
                     title="View on Explorer"
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -232,15 +255,15 @@ export default function Inbox({ refreshKey, onMessages }: InboxProps) {
                     On-chain Proof
                   </a>
                   {!m.read && (
-                    <button onClick={() => markAsRead(index)} className="btn btn-outline text-xs py-1 px-3">
+                    <Button onClick={() => markAsRead(index)} variant="outline" size="xs">
                       Mark as Read
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
     </div>
   );

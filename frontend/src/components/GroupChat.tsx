@@ -5,6 +5,7 @@ import { getRealtimeService, type RealtimeMessage } from '../lib/realtime'
 import { aptos } from '../config'
 import type { ReplyTarget } from '../types/reply'
 import EmojiPicker from './EmojiPicker'
+import { Button, Card } from './ui'
 
 const textDecoder = new TextDecoder()
 
@@ -389,13 +390,19 @@ export default function GroupChat({ contractAddress, groupAddr, onBack }: GroupC
     }, [messages])
 
     return (
-        <div className="relative flex flex-col h-[550px] md:h-[600px] lg:h-[650px] overflow-hidden animate-fade-in" style={{ background: 'var(--bg-main)', borderRadius: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-            <div className="p-3 sm:p-5 flex items-center gap-2 sm:gap-3" style={{ background: 'rgba(255,255,255,0.5)', backdropFilter: 'blur(10px)' }}>
-                <button onClick={onBack} className="p-2 hover:opacity-70 rounded-full transition-opacity touch-manipulation">
+        <Card className="relative flex flex-col h-[550px] md:h-[600px] lg:h-[650px] overflow-hidden animate-fade-in">
+            <div className="p-3 sm:p-5 flex items-center gap-2 sm:gap-3 border-b border-(--border-color) bg-(--bg-card)/80 backdrop-blur-sm">
+                <Button
+                    onClick={onBack}
+                    variant="ghost"
+                    size="sm"
+                    className="p-2"
+                    aria-label="Go back"
+                >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M19 12H5M12 19l-7-7 7-7" />
                     </svg>
-                </button>
+                </Button>
                 <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-(--text-primary) text-base sm:text-lg truncate">{groupName || 'Loading...'}</h3>
                     <div className="flex items-center gap-2">
@@ -408,6 +415,7 @@ export default function GroupChat({ contractAddress, groupAddr, onBack }: GroupC
                             onClick={() => copyToClipboard(groupAddr)}
                             className="text-xs text-(--text-secondary) hover:text-(--primary-brand) transition-colors p-1 touch-manipulation"
                             title="Copy Group Address"
+                            aria-label="Copy group address"
                         >
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -418,12 +426,12 @@ export default function GroupChat({ contractAddress, groupAddr, onBack }: GroupC
                 </div>
             </div>
             {copyStatus && (
-                <div className="absolute top-5 right-5 bg-white text-xs text-(--text-primary) px-4 py-2 rounded-full shadow-lg animate-fade-in" style={{ border: 'none' }}>
+                <div className="absolute top-5 right-5 bg-(--bg-card) text-xs text-(--text-primary) px-4 py-2 rounded-full shadow-lg animate-fade-in border border-(--border-color)">
                     ✓ {copyStatus}
                 </div>
             )}
 
-            <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4" style={{ background: '#f5f7fa' }}>
+            <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4 bg-(--bg-secondary)">
                 {messages.map((msg) => {
                     const parentMessage = msg.parentId ? messageLookup.get(msg.parentId) : null
                     const replySnippet = msg.type === 'audio' ? 'Audio message' : msg.content
@@ -508,9 +516,9 @@ export default function GroupChat({ contractAddress, groupAddr, onBack }: GroupC
                 <div ref={messagesEndRef} />
             </div>
 
-            <div className="p-3 sm:p-4 md:p-6 space-y-2 sm:space-y-3" style={{ background: 'white', borderTop: '1px solid #e5e7eb' }}>
+            <div className="p-3 sm:p-4 md:p-6 space-y-2 sm:space-y-3 bg-(--bg-card) border-t border-(--border-color)">
                 {replyTarget && (
-                    <div className="flex flex-col gap-1 rounded-2xl border border-(--border-color) bg-(--bg-card) p-3 text-[12px]">
+                    <Card variant="outlined" className="flex flex-col gap-1 p-3 text-[12px]">
                         <div className="flex items-center justify-between gap-3">
                             <span className="text-[11px] text-(--text-muted)">Replying to {replyTarget.sender.slice(0, 6)}...</span>
                             <button
@@ -524,7 +532,7 @@ export default function GroupChat({ contractAddress, groupAddr, onBack }: GroupC
                         <p className="text-sm text-(--text-primary)" style={{ margin: 0 }}>
                             {truncateSnippet(replyTarget.snippet, 120)}
                         </p>
-                    </div>
+                    </Card>
                 )}
                 <form onSubmit={handleSend} className="flex gap-2 sm:gap-3 items-center">
                     <div className="flex-1 relative">
@@ -533,8 +541,8 @@ export default function GroupChat({ contractAddress, groupAddr, onBack }: GroupC
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
                             placeholder={isRecording ? '🎤 Recording...' : 'Type a message...'}
-                            className="w-full bg-(--bg-card) rounded-full pl-4 sm:pl-6 pr-12 py-3 sm:py-4 text-(--text-primary) focus:outline-none focus:ring-2 focus:ring-(--primary-brand) transition-all placeholder:text-(--text-muted)"
-                            style={{ border: '1px solid #e5e7eb', boxShadow: 'none', fontSize: '15px', minHeight: '48px', touchAction: 'manipulation' }}
+                            className="w-full bg-(--bg-secondary) rounded-full pl-4 sm:pl-6 pr-12 py-3 sm:py-4 text-(--text-primary) focus:outline-none focus:ring-2 focus:ring-(--primary-brand) transition-all placeholder:text-(--text-muted) border border-(--border-color)"
+                            style={{ fontSize: '15px', minHeight: '48px' }}
                             disabled={sending || isRecording}
                         />
                         <div className="absolute right-2 top-1/2 -translate-y-1/2">
@@ -544,14 +552,12 @@ export default function GroupChat({ contractAddress, groupAddr, onBack }: GroupC
                             />
                         </div>
                     </div>
-                    <button
+                    <Button
                         type="button"
                         onClick={isRecording ? stopRecording : startRecording}
-                        className={`p-3 sm:p-4 rounded-full transition-all flex items-center justify-center gap-2 touch-manipulation ${isRecording
-                            ? 'bg-red-500 text-white animate-pulse'
-                            : 'bg-(--primary-brand) text-white hover:bg-(--primary-brand-hover) active:scale-95'
-                            }`}
-                        style={{ border: 'none', boxShadow: '0 2px 12px rgba(0,0,0,0.12)', minWidth: isRecording ? '90px' : '48px', minHeight: '48px' }}
+                        variant={isRecording ? 'danger' : 'primary'}
+                        className={`p-3 sm:p-4 rounded-full ${isRecording ? 'animate-pulse' : ''}`}
+                        style={{ minWidth: isRecording ? '90px' : '48px', minHeight: '48px' }}
                         title={isRecording ? 'Stop Recording' : 'Record Voice Message'}
                         disabled={sending}
                     >
@@ -572,21 +578,21 @@ export default function GroupChat({ contractAddress, groupAddr, onBack }: GroupC
                                 {formatTime(recordingTime)}
                             </span>
                         )}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         type="submit"
-                        className="p-3 sm:p-4 bg-(--primary-brand) text-white rounded-full hover:bg-(--primary-brand-hover) disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-95 touch-manipulation"
-                        style={{ border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', minWidth: '48px', minHeight: '48px' }}
+                        variant="primary"
+                        className="p-3 sm:p-4 rounded-full"
+                        style={{ minWidth: '48px', minHeight: '48px' }}
                         disabled={sending || !newMessage.trim() || isRecording}
+                        loading={sending}
                     >
-                        {sending ? (
-                            <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        ) : (
+                        {!sending && (
                             <svg width="20" height="20" className="sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
                             </svg>
                         )}
-                    </button>
+                    </Button>
                 </form>
                 {audioStatus !== 'idle' && (
                     <div className="text-xs text-(--text-muted) flex items-center gap-2 px-2">
@@ -600,6 +606,6 @@ export default function GroupChat({ contractAddress, groupAddr, onBack }: GroupC
                     <div className="text-xs text-red-600 px-2">❌ {audioError}</div>
                 )}
             </div>
-        </div>
+        </Card>
     )
 }

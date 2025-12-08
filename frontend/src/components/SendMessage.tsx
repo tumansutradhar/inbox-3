@@ -6,6 +6,7 @@ import EmojiPicker from './EmojiPicker'
 import FileUpload from './FileUpload'
 import GiphyPicker from './GiphyPicker'
 import StickerPicker from './StickerPicker'
+import { Button, Input, Textarea, Card, Spinner } from './ui'
 
 interface SendMessageProps {
   contractAddress: string
@@ -225,34 +226,27 @@ export default function SendMessage({ contractAddress, onMessageSent, initialRec
   }
 
   return (
-    <div className="card p-6 animate-fade-in" style={{ border: 'none', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+    <Card variant="default" className="p-6 animate-fade-in">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="form-group">
-          <label className="form-label">Recipient Address</label>
-          <input
-            type="text"
-            value={recipient}
-            onChange={(e) => setRecipient(e.target.value)}
-            placeholder="0x..."
-            className="input"
-            style={{ border: '1px solid rgba(0,0,0,0.08)' }}
-            required
-          />
-          <div className="form-help">
-            Enter the recipient's wallet address (starts with 0x)
-          </div>
-        </div>
+        <Input
+          label="Recipient Address"
+          type="text"
+          value={recipient}
+          onChange={(e) => setRecipient(e.target.value)}
+          placeholder="0x..."
+          hint="Enter the recipient's wallet address (starts with 0x)"
+          required
+        />
 
         <div className="form-group">
-          <label className="form-label">Message</label>
+          <label className="block text-sm font-medium text-(--text-primary) mb-1.5">Message</label>
           <div className="flex flex-col gap-2">
             <div className="relative">
-              <textarea
+              <Textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Type your secure message..."
-                className="input min-h-[100px] pr-20"
-                style={{ border: '1px solid rgba(0,0,0,0.08)' }}
+                className="min-h-[100px] pr-20"
                 required={!isRecording}
                 disabled={isRecording}
               />
@@ -320,93 +314,83 @@ export default function SendMessage({ contractAddress, onMessageSent, initialRec
               </div>
             </div>
             <div className="flex gap-2">
-              <button
+              <Button
                 type="button"
                 onClick={isRecording ? stopRecording : startRecording}
-                className={`p-3 rounded-xl transition-all flex items-center justify-center gap-2 ${isRecording
-                  ? 'bg-red-500 text-white animate-pulse'
-                  : 'bg-(--bg-card) text-(--text-secondary) hover:text-(--primary-brand)'
-                  }`}
-                style={{
-                  border: isRecording ? 'none' : '1px solid rgba(0,0,0,0.08)',
-                  minWidth: '140px'
-                }}
+                variant={isRecording ? 'danger' : 'secondary'}
+                className={`min-w-[140px] ${isRecording ? 'animate-pulse' : ''}`}
+                icon={
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    {isRecording ? (
+                      <rect x="6" y="6" width="12" height="12" />
+                    ) : (
+                      <>
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                        <line x1="12" y1="19" x2="12" y2="23" />
+                        <line x1="8" y1="23" x2="16" y2="23" />
+                      </>
+                    )}
+                  </svg>
+                }
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  {isRecording ? (
-                    <rect x="6" y="6" width="12" height="12" />
-                  ) : (
-                    <>
-                      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-                      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                      <line x1="12" y1="19" x2="12" y2="23" />
-                      <line x1="8" y1="23" x2="16" y2="23" />
-                    </>
-                  )}
-                </svg>
-                <span className="font-medium text-sm">
-                  {isRecording ? `${formatTime(recordingTime)}` : 'Record Audio'}
-                </span>
-              </button>
+                {isRecording ? `${formatTime(recordingTime)}` : 'Record Audio'}
+              </Button>
 
-              <button
+              <Button
                 type="submit"
                 disabled={loading || (!recipient.trim() && !isRecording) || (!message.trim() && !isRecording)}
-                className="flex-1 btn btn-primary flex items-center justify-center gap-2"
-                style={{ border: 'none' }}
-              >
-                {loading ? (
-                  <>
-                    <div className="spinner w-4 h-4"></div>
-                    {currentStep || 'Sending...'}
-                  </>
-                ) : (
-                  <>
+                loading={loading}
+                variant="primary"
+                className="flex-1"
+                icon={
+                  !loading ? (
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M22 2L11 13" />
                       <path d="M22 2L15 22L11 13L2 9L22 2Z" />
                     </svg>
-                    Send Message
-                  </>
-                )}
-              </button>
+                  ) : undefined
+                }
+              >
+                {loading ? (currentStep || 'Sending...') : 'Send Message'}
+              </Button>
             </div>
           </div>
         </div>
 
         {/* Status Indicator */}
         {(loading || currentStep) && (
-          <div className="bg-blue-50 rounded-lg p-4" style={{ border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+          <Card variant="outlined" className="p-4 border-l-4 border-l-blue-500 bg-blue-50 dark:bg-blue-900/20">
             <div className="flex items-center gap-3">
-              {loading && (
-                <div className="spinner"></div>
-              )}
+              {loading && <Spinner size="sm" />}
               <div>
-                <p className="font-medium text-sm text-blue-800">
+                <p className="font-medium text-sm text-blue-800 dark:text-blue-300">
                   {currentStep || 'Processing...'}
                 </p>
                 {ipfsHash && (
-                  <p className="text-xs text-blue-600 mt-1">
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-mono">
                     IPFS Hash: {ipfsHash.slice(0, 20)}...
                   </p>
                 )}
               </div>
             </div>
-          </div>
+          </Card>
         )}
 
-        <div className="security-notice" style={{ border: '1px solid rgba(251, 146, 60, 0.3)' }}>
+        <Card variant="outlined" className="p-4 border-l-4 border-l-orange-500 bg-orange-50 dark:bg-orange-900/20">
           <div className="flex items-center gap-3">
-            <div className="security-notice-icon">!</div>
+            <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center text-orange-600 dark:text-orange-400 font-bold text-sm">
+              !
+            </div>
             <div>
-              <p className="font-medium text-sm">Security Notice</p>
-              <p className="text-xs text-secondary">
+              <p className="font-medium text-sm text-orange-800 dark:text-orange-300">Security Notice</p>
+              <p className="text-xs text-orange-600 dark:text-orange-400">
                 Messages are encrypted and stored on IPFS. Only the recipient can decrypt and read your message.
               </p>
             </div>
           </div>
-        </div>
+        </Card>
       </form>
-    </div>
+    </Card>
   )
 }
