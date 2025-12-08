@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useState, useEffect } from 'react'
 
 interface OnboardingTourProps {
@@ -150,8 +151,8 @@ export default function OnboardingTour({ isOpen, onComplete }: OnboardingTourPro
                                 key={index}
                                 onClick={() => setCurrentStep(index)}
                                 className={`w-2 h-2 rounded-full transition-all ${index === currentStep
-                                        ? 'w-6 bg-(--primary-brand)'
-                                        : 'bg-(--border-color) hover:bg-(--text-muted)'
+                                    ? 'w-6 bg-(--primary-brand)'
+                                    : 'bg-(--border-color) hover:bg-(--text-muted)'
                                     }`}
                             />
                         ))}

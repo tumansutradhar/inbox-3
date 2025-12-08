@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useState } from 'react'
 
 interface Reaction {
@@ -35,8 +36,8 @@ export default function MessageReactions({ messageId, reactions = [], onReact, c
                     key={`${messageId}-${reaction.emoji}-${index}`}
                     onClick={() => handleReaction(reaction.emoji)}
                     className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-all ${userHasReacted(reaction)
-                            ? 'bg-(--primary-brand) text-white'
-                            : 'bg-(--bg-secondary) text-(--text-primary) hover:bg-(--bg-card)'
+                        ? 'bg-(--primary-brand) text-white'
+                        : 'bg-(--bg-secondary) text-(--text-primary) hover:bg-(--bg-card)'
                         }`}
                 >
                     <span>{reaction.emoji}</span>

@@ -69,7 +69,7 @@ function App() {
   const [isDraftsOpen, setIsDraftsOpen] = useState(false)
 
   // Hooks
-  const { saveDraft, getDraft, removeDraft, getAllDrafts, hasDrafts } = useDrafts()
+  const { removeDraft, getAllDrafts, hasDrafts } = useDrafts()
   const drafts = getAllDrafts()
 
   // Keyboard shortcuts

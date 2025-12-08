@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useEffect, useCallback } from 'react'
 
 interface Shortcut {
@@ -7,11 +8,6 @@ interface Shortcut {
     shift?: boolean
     description: string
     action: () => void
-}
-
-interface KeyboardShortcutsProps {
-    shortcuts: Shortcut[]
-    enabled?: boolean
 }
 
 export function useKeyboardShortcuts(shortcuts: Shortcut[], enabled = true) {

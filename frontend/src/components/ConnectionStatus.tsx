@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useState, useEffect } from 'react'
 
 interface ConnectionStatusProps {
@@ -6,7 +7,7 @@ interface ConnectionStatusProps {
 
 export default function ConnectionStatus({ compact = false }: ConnectionStatusProps) {
     const [isOnline, setIsOnline] = useState(navigator.onLine)
-    const [lastDisconnect, setLastDisconnect] = useState<number | null>(null)
+    const [, setLastDisconnect] = useState<number | null>(null)
     const [showNotification, setShowNotification] = useState(false)
 
     useEffect(() => {

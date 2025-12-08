@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useState } from 'react'
 
 interface Template {
@@ -26,7 +27,7 @@ interface QuickRepliesProps {
 }
 
 export default function QuickReplies({ onSelect, isOpen, onClose }: QuickRepliesProps) {
-    const [templates, setTemplates] = useState<Template[]>(() => {
+    const [templates] = useState<Template[]>(() => {
         const saved = localStorage.getItem('inbox3_templates')
         return saved ? JSON.parse(saved) : DEFAULT_TEMPLATES
     })
