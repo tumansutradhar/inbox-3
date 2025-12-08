@@ -125,8 +125,8 @@ export default function ProfileEditor() {
             {message && (
                 <div
                     className={`mb-4 p-4 rounded-lg ${message.type === 'success'
-                            ? 'bg-green-500/10 text-green-500 border border-green-500/20'
-                            : 'bg-red-500/10 text-red-500 border border-red-500/20'
+                        ? 'bg-green-500/10 text-green-500 border border-green-500/20'
+                        : 'bg-red-500/10 text-red-500 border border-red-500/20'
                         }`}
                 >
                     {message.text}

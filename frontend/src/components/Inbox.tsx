@@ -223,7 +223,7 @@ export default function Inbox({ refreshKey, onMessages }: InboxProps) {
                         <span className="text-xs text-(--text-muted)">
                           {new Date(m.timestamp * 1000).toLocaleString()}
                         </span>
-                    </div>
+                      </div>
                     </div>
                   </div>
                   {!m.read && (
