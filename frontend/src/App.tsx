@@ -20,13 +20,15 @@ import PerformanceDashboard from './components/PerformanceDashboard'
 import { useKeyboardShortcuts, ShortcutsModal, DEFAULT_SHORTCUTS } from './components/KeyboardShortcuts'
 import ExportChat from './components/ExportChat'
 import { useDrafts, DraftsModal } from './components/DraftManager'
+import ComponentShowcase from './components/ComponentShowcase'
 import { getRealtimeService, type RealtimeMessage } from './lib/realtime'
 import { useNotifications } from './lib/notifications'
 import { type SearchableMessage } from './lib/messageSearcher'
 import { aptos, CONTRACT_ADDRESS, NETWORK } from './config'
+import { Button, Card, Badge, StatusIndicator } from './components/ui'
 import './App.css'
 
-type AppView = 'dm' | 'groups'
+type AppView = 'dm' | 'groups' | 'showcase'
 type ActiveTool = 'profile' | 'contacts' | 'search' | 'none'
 
 function App() {
@@ -394,31 +396,38 @@ function App() {
             </div>
 
             <div className="space-y-4 mb-6">
-              <button
+              <Button
                 onClick={() => {
                   setWalletModalMode('wallet')
                   setIsWalletModalOpen(true)
                 }}
-                className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-(--primary-brand) text-white rounded-xl hover:bg-(--primary-brand-hover) hover:shadow-lg hover:-translate-y-0.5 transition-all font-bold text-lg shadow-md"
+                variant="primary"
+                size="lg"
+                fullWidth
+                icon={
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M20 7h-9" />
+                    <path d="M14 17H5" />
+                    <circle cx="17" cy="17" r="3" />
+                    <circle cx="7" cy="7" r="3" />
+                  </svg>
+                }
+                iconPosition="left"
               >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M20 7h-9" />
-                  <path d="M14 17H5" />
-                  <circle cx="17" cy="17" r="3" />
-                  <circle cx="7" cy="7" r="3" />
-                </svg>
                 Connect Wallet
-              </button>
+              </Button>
 
-              <button
+              <Button
                 onClick={() => {
                   setWalletModalMode('social')
                   setIsWalletModalOpen(true)
                 }}
-                className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-(--bg-card) border border-(--border-color) rounded-xl hover:bg-(--bg-secondary) transition-all text-(--text-primary) font-medium"
+                variant="outline"
+                size="md"
+                fullWidth
               >
                 Sign in with other options
-              </button>
+              </Button>
             </div>
 
             <div className="mt-8 text-center">
@@ -563,39 +572,58 @@ function App() {
             <div className="flex bg-(--bg-secondary) rounded-lg p-0.5">
               <button
                 onClick={() => setCurrentView('dm')}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-1.5 ${currentView === 'dm' 
-                  ? 'bg-(--bg-card) text-(--primary-brand) shadow-sm' 
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-1.5 ${currentView === 'dm'
+                  ? 'bg-(--bg-card) text-(--primary-brand) shadow-sm'
                   : 'text-(--text-secondary) hover:text-(--text-primary)'
-                }`}
+                  }`}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
                 <span className="hidden sm:inline">Messages</span>
                 {unreadCount > 0 && <UnreadBadge count={unreadCount} size="sm" />}
               </button>
               <button
                 onClick={() => setCurrentView('groups')}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-1.5 ${currentView === 'groups' 
-                  ? 'bg-(--bg-card) text-(--primary-brand) shadow-sm' 
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-1.5 ${currentView === 'groups'
+                  ? 'bg-(--bg-card) text-(--primary-brand) shadow-sm'
                   : 'text-(--text-secondary) hover:text-(--text-primary)'
-                }`}
+                  }`}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                  <circle cx="9" cy="7" r="4"/>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                 </svg>
                 <span className="hidden sm:inline">Groups</span>
               </button>
+              {/* Component Showcase - Dev Only */}
+              {import.meta.env.DEV && (
+                <button
+                  onClick={() => setCurrentView('showcase')}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-1.5 ${currentView === 'showcase'
+                    ? 'bg-(--bg-card) text-(--primary-brand) shadow-sm'
+                    : 'text-(--text-secondary) hover:text-(--text-primary)'
+                    }`}
+                  title="Component Library (Dev Only)"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                  </svg>
+                  <span className="hidden sm:inline">UI</span>
+                </button>
+              )}
             </div>
 
             {/* Right Actions */}
             <div className="flex items-center gap-1 sm:gap-2">
               {/* Wallet Address */}
               <div className="hidden md:flex items-center gap-2 px-2 py-1 bg-(--bg-secondary) rounded-lg">
-                <div className="w-1.5 h-1.5 rounded-full bg-(--success-green)"></div>
+                <StatusIndicator status="online" showLabel={false} size="sm" />
                 <span className="text-xs font-mono text-(--text-secondary)">
                   {account?.address?.toString()?.slice(0, 6)}...{account?.address?.toString()?.slice(-4)}
                 </span>
@@ -604,26 +632,28 @@ function App() {
               {/* Quick Actions */}
               <button
                 onClick={() => setIsQRModalOpen(true)}
-                className="p-2 rounded-lg text-(--text-secondary) hover:bg-(--bg-secondary) hover:text-(--text-primary) transition-colors"
+                className="p-2 rounded-xl text-(--text-secondary) hover:bg-(--bg-secondary) hover:text-(--text-primary) transition-all focus:outline-none focus:ring-2 focus:ring-(--primary-brand)/50"
                 title="Share Address"
+                aria-label="Share Address"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3z"/><path d="M17 17h3v3h-3z"/><path d="M14 17h3v3h-3z"/>
+                  <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><path d="M14 14h3v3h-3z" /><path d="M17 17h3v3h-3z" /><path d="M14 17h3v3h-3z" />
                 </svg>
               </button>
 
               <button
                 onClick={toggleDarkMode}
-                className="p-2 rounded-lg text-(--text-secondary) hover:bg-(--bg-secondary) hover:text-(--text-primary) transition-colors"
+                className="p-2 rounded-xl text-(--text-secondary) hover:bg-(--bg-secondary) hover:text-(--text-primary) transition-all focus:outline-none focus:ring-2 focus:ring-(--primary-brand)/50"
                 title="Toggle Theme"
+                aria-label="Toggle Theme"
               >
                 {darkMode ? (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                    <circle cx="12" cy="12" r="5" /><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
                   </svg>
                 ) : (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
                   </svg>
                 )}
               </button>
@@ -631,14 +661,14 @@ function App() {
               {/* Realtime Toggle */}
               <button
                 onClick={() => setRealtimeEnabled(prev => !prev)}
-                className={`hidden sm:flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-colors ${
-                  realtimeEnabled 
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
-                    : 'bg-(--bg-secondary) text-(--text-secondary) hover:text-(--text-primary)'
-                }`}
+                className={`hidden sm:flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-colors ${realtimeEnabled
+                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                  : 'bg-(--bg-secondary) text-(--text-secondary) hover:text-(--text-primary)'
+                  }`}
                 title="Toggle real-time updates"
+                aria-label={realtimeEnabled ? 'Disable real-time updates' : 'Enable real-time updates'}
               >
-                <div className={`w-1.5 h-1.5 rounded-full ${realtimeEnabled ? 'bg-green-500 animate-pulse' : 'bg-(--text-muted)'}`}></div>
+                <StatusIndicator status={realtimeEnabled ? 'online' : 'offline'} showLabel={false} size="sm" />
                 <span>{realtimeEnabled ? 'Live' : 'Off'}</span>
               </button>
 
@@ -646,37 +676,42 @@ function App() {
               {hasDrafts && (
                 <button
                   onClick={() => setIsDraftsOpen(true)}
-                  className="p-2 rounded-lg text-(--text-secondary) hover:bg-(--bg-secondary) hover:text-(--primary-brand) transition-colors relative"
+                  className="p-2 rounded-xl text-(--text-secondary) hover:bg-(--bg-secondary) hover:text-(--primary-brand) transition-all focus:outline-none focus:ring-2 focus:ring-(--primary-brand)/50 relative"
                   title="Drafts"
+                  aria-label={`${drafts.length} drafts`}
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/>
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /><path d="M16 13H8" /><path d="M16 17H8" /><path d="M10 9H8" />
                   </svg>
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-(--primary-brand) text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  <Badge variant="danger" className="absolute -top-1 -right-1 px-1! py-0! text-[10px]">
                     {drafts.length}
-                  </span>
+                  </Badge>
                 </button>
               )}
 
               <button
                 onClick={() => setIsSettingsOpen(true)}
-                className="p-2 rounded-lg text-(--text-secondary) hover:bg-(--bg-secondary) hover:text-(--text-primary) transition-colors"
+                className="p-2 rounded-xl text-(--text-secondary) hover:bg-(--bg-secondary) hover:text-(--text-primary) transition-all focus:outline-none focus:ring-2 focus:ring-(--primary-brand)/50"
                 title="Settings"
+                aria-label="Settings"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                  <circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
                 </svg>
               </button>
 
-              <button 
-                onClick={disconnect} 
-                className="ml-1 px-3 py-1.5 text-sm font-medium text-(--text-secondary) hover:text-(--error-red) hover:bg-red-50 rounded-lg transition-colors"
+              <Button
+                onClick={disconnect}
+                variant="ghost"
+                size="sm"
+                className="ml-1 hover:text-(--error-red) hover:bg-red-50"
+                aria-label="Disconnect wallet"
               >
                 <span className="hidden sm:inline">Disconnect</span>
                 <svg className="sm:hidden w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
                 </svg>
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -698,27 +733,22 @@ function App() {
             )}
             {!hasInbox ? (
               <div className="text-center">
-                <div className="card p-8 max-w-md mx-auto">
+                <Card variant="elevated" className="p-8 max-w-md mx-auto">
                   <img src="/logo.png" alt="Inbox3 Logo" className="welcome-logo-img" />
                   <h2 className="text-2xl font-bold mb-4">Welcome to Inbox3!</h2>
                   <p className="text-secondary mb-6">
                     Create your decentralized inbox to start receiving secure messages on the Aptos blockchain.
                   </p>
-                  <button onClick={createInbox} disabled={loading} className="btn btn-primary w-full">
-                    {loading ? (
-                      <div className="flex items-center gap-2">
-                        <div className="spinner"></div>
-                        Creating Inbox...
-                      </div>
-                    ) : (
-                      'Create Your Inbox'
-                    )}
-                  </button>
-                </div>
+                  <Button onClick={createInbox} disabled={loading} loading={loading} variant="primary" fullWidth>
+                    {loading ? 'Creating Inbox...' : 'Create Your Inbox'}
+                  </Button>
+                </Card>
               </div>
             ) : (
               <>
-                {currentView === 'dm' ? (
+                {currentView === 'showcase' ? (
+                  <ComponentShowcase />
+                ) : currentView === 'dm' ? (
                   <div className="centered-grid">
                     <div className="animate-fade-in">
                       <div className="flex items-center gap-3 mb-6">
@@ -737,14 +767,14 @@ function App() {
                     <div className="animate-fade-in">
                       <div className="flex items-center justify-between mb-6">
                         <h2 className="text-xl font-semibold">Inbox</h2>
-                        <button onClick={refreshInbox} className="btn btn-outline text-sm">
+                        <Button onClick={refreshInbox} variant="outline" size="sm">
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M23 4V10H17" />
                             <path d="M1 20V14H7" />
                             <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14L18.36 18.36A9 9 0 0 1 3.51 15" />
                           </svg>
                           Refresh
-                        </button>
+                        </Button>
                       </div>
                       <Inbox refreshKey={refreshKey} onMessages={setLoadedMessages} />
                     </div>
@@ -774,18 +804,15 @@ function App() {
           <aside className="bg-(--bg-card) border border-(--border-color) rounded-3xl p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)]">
             <div className="flex flex-wrap gap-2 mb-4">
               {toolTabs.map((tool) => (
-                <button
+                <Button
                   key={tool.id}
-                  type="button"
                   onClick={() => setActiveTool(tool.id)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${activeTool === tool.id
-                    ? 'bg-(--primary-brand) text-white border-transparent'
-                    : 'bg-(--bg-secondary) text-(--text-secondary) border-(--border-color) hover:text-(--text-primary)'
-                    }`}
+                  variant={activeTool === tool.id ? 'primary' : 'ghost'}
+                  size="xs"
                   aria-pressed={activeTool === tool.id}
                 >
                   {tool.label}
-                </button>
+                </Button>
               ))}
             </div>
             <div className="min-h-80 max-h-[70vh] overflow-y-auto">
