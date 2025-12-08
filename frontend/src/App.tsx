@@ -802,7 +802,7 @@ function App() {
               </>
             )}
           </section>
-          <aside className="bg-(--bg-card) border border-(--border-color) rounded-3xl p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)]">
+          <aside className="bg-(--bg-card) border border-(--border-color) rounded-3xl p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] relative z-10 lg:sticky lg:top-20 lg:self-start">
             <div className="flex flex-wrap gap-2 mb-4">
               {toolTabs.map((tool) => (
                 <Button
@@ -816,7 +816,7 @@ function App() {
                 </Button>
               ))}
             </div>
-            <div className="min-h-80 max-h-[70vh] overflow-y-auto">
+            <div className="min-h-80 max-h-[60vh] overflow-y-auto">
               {renderToolContent()}
             </div>
           </aside>
