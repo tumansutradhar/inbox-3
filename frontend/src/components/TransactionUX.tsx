@@ -47,7 +47,7 @@ export function TransactionModal({
                     {steps.map((step, index) => (
                         <div key={step.id} className="flex items-start gap-3">
                             {/* Step indicator */}
-                            <div className="flex-shrink-0 mt-0.5">
+                            <div className="shrink-0 mt-0.5">
                                 {step.status === 'completed' ? (
                                     <div className="w-6 h-6 rounded-full bg-(--success-green) flex items-center justify-center">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
@@ -259,7 +259,7 @@ export function WalletConnectionModal({
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="2"
-                        className="flex-shrink-0 text-(--warning-yellow)"
+                        className="shrink-0 text-(--warning-yellow)"
                     >
                         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                     </svg>

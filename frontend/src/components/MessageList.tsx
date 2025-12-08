@@ -130,7 +130,7 @@ export function MessageList({
             {Array.from(groupedMessages.entries()).map(([date, msgs]) => (
                 <div key={date}>
                     {/* Date separator */}
-                    <div className="sticky top-0 z-[5] px-4 py-2 bg-(--bg-main)/95 backdrop-blur-sm">
+                    <div className="sticky top-0 z-5 px-4 py-2 bg-(--bg-main)/95 backdrop-blur-sm">
                         <span className="text-xs font-medium text-(--text-muted) uppercase tracking-wider">
                             {date}
                         </span>
@@ -154,7 +154,7 @@ export function MessageList({
                 `}
                             >
                                 {/* Avatar */}
-                                <div className="relative flex-shrink-0">
+                                <div className="relative shrink-0">
                                     <Avatar address={msg.sender} size="md" />
                                     {!msg.read && (
                                         <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-(--primary-brand) rounded-full ring-2 ring-(--bg-card)" />
@@ -170,7 +170,7 @@ export function MessageList({
                                         >
                                             {msg.sender.slice(0, 6)}...{msg.sender.slice(-4)}
                                         </span>
-                                        <span className="flex-shrink-0 text-xs text-(--text-muted)">
+                                        <span className="shrink-0 text-xs text-(--text-muted)">
                                             {formatTime(msg.timestamp)}
                                         </span>
                                     </div>

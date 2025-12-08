@@ -211,7 +211,7 @@ export function IPFSUpload({
             {uploadState.status === 'complete' && uploadState.cid && (
                 <div className="p-6 border border-(--success-green)/30 bg-(--success-light) rounded-2xl">
                     <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-(--success-green) flex items-center justify-center flex-shrink-0">
+                        <div className="w-10 h-10 rounded-xl bg-(--success-green) flex items-center justify-center shrink-0">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
                                 <path d="M20 6L9 17l-5-5" />
                             </svg>
@@ -252,7 +252,7 @@ export function IPFSUpload({
             {uploadState.status === 'error' && (
                 <div className="p-6 border border-(--error-red)/30 bg-(--error-light) rounded-2xl">
                     <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-(--error-red) flex items-center justify-center flex-shrink-0">
+                        <div className="w-10 h-10 rounded-xl bg-(--error-red) flex items-center justify-center shrink-0">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
                                 <path d="M18 6L6 18M6 6l12 12" />
                             </svg>

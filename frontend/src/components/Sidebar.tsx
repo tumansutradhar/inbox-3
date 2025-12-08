@@ -151,7 +151,7 @@ export function Sidebar({
                 ${!isExpanded ? 'justify-center' : ''}
               `}
                         >
-                            <span className="flex-shrink-0">{item.icon}</span>
+                            <span className="shrink-0">{item.icon}</span>
                             {isExpanded && (
                                 <>
                                     <span className="flex-1 text-left font-medium">{item.label}</span>
