@@ -76,3 +76,45 @@ export const decrypt = (
 
   return new TextDecoder().decode(plainBytes);
 };
+
+// --- Key Rotation & Versioning (Stub/Placeholder) ---
+
+/**
+ * Rotates the current key pair.
+ * In a full implementation, this would:
+ * 1. Generate new keys
+ * 2. Sign the new public key with the old private key
+ * 3. Publish the new signed key to the blockchain
+ * 4. Update local storage
+ */
+export const rotateKey = async (currentPrivHex: string): Promise<{ newPrivHex: string, newPubHex: string, signature: string }> => {
+  console.log('🔄 Initiating key rotation for:', currentPrivHex.slice(0, 8) + '...');
+
+  // Simulate key generation
+  const newPair = nacl.box.keyPair();
+  const newPrivHex = bytesToHex(newPair.secretKey);
+  const newPubHex = bytesToHex(newPair.publicKey);
+
+  // Simulate signing (signing the new pubkey with old privkey)
+  // This proves ownership of the old key
+  // In reality, we'd use nacl.sign here, but for now we mock it
+  const signature = 'mock_signature_' + Date.now();
+
+  console.log('✅ Key rotation simulated. New Public Key:', newPubHex);
+
+  return {
+    newPrivHex,
+    newPubHex,
+    signature
+  };
+};
+
+/**
+ * Gets the current version of the key.
+ * This helps in supporting multiple key versions for forward secrecy.
+ */
+export const getKeyVersion = (pubHex: string): number => {
+  // Stub: always return version 1
+  return 1;
+}
+

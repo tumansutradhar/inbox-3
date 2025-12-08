@@ -1,7 +1,11 @@
-import { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useWallet } from '@aptos-labs/wallet-adapter-react'
 import { upload, uploadFile, uploadToPinata } from '../lib/ipfs'
 import { aptos } from '../config'
+import EmojiPicker from './EmojiPicker'
+import FileUpload from './FileUpload'
+import GiphyPicker from './GiphyPicker'
+import StickerPicker from './StickerPicker'
 
 interface SendMessageProps {
   contractAddress: string
@@ -18,6 +22,8 @@ export default function SendMessage({ contractAddress, onMessageSent, initialRec
   const [ipfsHash, setIpfsHash] = useState('')
   const [isRecording, setIsRecording] = useState(false)
   const [recordingTime, setRecordingTime] = useState(0)
+  const [showGiphy, setShowGiphy] = useState(false)
+  const [showStickers, setShowStickers] = useState(false)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -240,15 +246,79 @@ export default function SendMessage({ contractAddress, onMessageSent, initialRec
         <div className="form-group">
           <label className="form-label">Message</label>
           <div className="flex flex-col gap-2">
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Type your secure message..."
-              className="input min-h-[100px]"
-              style={{ border: '1px solid rgba(0,0,0,0.08)' }}
-              required={!isRecording}
-              disabled={isRecording}
-            />
+            <div className="relative">
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Type your secure message..."
+                className="input min-h-[100px] pr-20"
+                style={{ border: '1px solid rgba(0,0,0,0.08)' }}
+                required={!isRecording}
+                disabled={isRecording}
+              />
+              <div className="absolute right-2 top-2 flex gap-1">
+                {/* GIF Button */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowGiphy(!showGiphy)
+                      setShowStickers(false)
+                    }}
+                    className="p-2 rounded-lg hover:bg-(--bg-secondary) text-(--text-muted) hover:text-(--text-primary) transition-colors"
+                  >
+                    <span className="font-bold text-xs border border-current rounded px-0.5">GIF</span>
+                  </button>
+                  {showGiphy && (
+                    <GiphyPicker
+                      onSelect={(url) => {
+                        setMessage(prev => prev + `\n![GIF](${url})`)
+                        setShowGiphy(false)
+                      }}
+                      onClose={() => setShowGiphy(false)}
+                    />
+                  )}
+                </div>
+
+                {/* Sticker Button */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowStickers(!showStickers)
+                      setShowGiphy(false)
+                    }}
+                    className="p-2 rounded-lg hover:bg-(--bg-secondary) text-(--text-muted) hover:text-(--text-primary) transition-colors"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg>
+                  </button>
+                  {showStickers && (
+                    <StickerPicker
+                      onSelect={(url) => {
+                        setMessage(prev => prev + `\n![Sticker](${url})`)
+                        setShowStickers(false)
+                      }}
+                      onClose={() => setShowStickers(false)}
+                    />
+                  )}
+                </div>
+
+                <EmojiPicker
+                  onSelect={(emoji) => setMessage(prev => prev + emoji)}
+                  position="bottom"
+                />
+                <FileUpload
+                  disabled={loading || isRecording}
+                  onFileUploaded={async (url, type, fileName) => {
+                    if (type === 'image') {
+                      setMessage(prev => prev + `\n[Image: ${fileName}](${url})`)
+                    } else {
+                      setMessage(prev => prev + `\n[File: ${fileName}](${url})`)
+                    }
+                  }}
+                />
+              </div>
+            </div>
             <div className="flex gap-2">
               <button
                 type="button"

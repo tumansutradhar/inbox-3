@@ -11,6 +11,15 @@ import GroupChat from './components/GroupChat'
 import CreateGroupModal from './components/CreateGroupModal'
 import JoinGroupModal from './components/JoinGroupModal'
 import WalletModal from './components/WalletModal'
+import SettingsPanel from './components/SettingsPanel'
+import QRCodeModal from './components/QRCodeModal'
+import OnboardingTour, { useOnboardingTour } from './components/OnboardingTour'
+import { UnreadBadge } from './components/MessageIndicators'
+import ConnectionStatus from './components/ConnectionStatus'
+import PerformanceDashboard from './components/PerformanceDashboard'
+import { useKeyboardShortcuts, ShortcutsModal, DEFAULT_SHORTCUTS } from './components/KeyboardShortcuts'
+import ExportChat from './components/ExportChat'
+import { useDrafts, DraftIndicator, DraftsModal } from './components/DraftManager'
 import { getRealtimeService, type RealtimeMessage } from './lib/realtime'
 import { useNotifications } from './lib/notifications'
 import { type SearchableMessage } from './lib/messageSearcher'
@@ -48,6 +57,56 @@ function App() {
   const [activeTool, setActiveTool] = useState<ActiveTool>('profile')
   const [loadedMessages, setLoadedMessages] = useState<ProcessedMessage[]>([])
   const [selectedRecipient, setSelectedRecipient] = useState('')
+
+  // New feature states
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false)
+  const { shouldShow: showOnboarding, setShouldShow: setShowOnboarding } = useOnboardingTour()
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [isPerformanceOpen, setIsPerformanceOpen] = useState(false)
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false)
+  const [isExportOpen, setIsExportOpen] = useState(false)
+  const [isDraftsOpen, setIsDraftsOpen] = useState(false)
+
+  // Hooks
+  const { saveDraft, getDraft, removeDraft, getAllDrafts, hasDrafts } = useDrafts()
+  const drafts = getAllDrafts()
+
+  // Keyboard shortcuts
+  const shortcuts = useMemo(() => [
+    ...DEFAULT_SHORTCUTS.map(s => ({
+      ...s,
+      action: () => {
+        switch (s.key) {
+          case 's':
+            setIsSettingsOpen(true)
+            break
+          case 'g':
+            setCurrentView('groups')
+            break
+          case 'd':
+            setCurrentView('dm')
+            break
+          case '?':
+            setIsShortcutsOpen(true)
+            break
+          case 'r':
+            refreshInbox()
+            break
+          case 'Escape':
+            setIsSettingsOpen(false)
+            setIsQRModalOpen(false)
+            setIsPerformanceOpen(false)
+            setIsShortcutsOpen(false)
+            setIsExportOpen(false)
+            setIsDraftsOpen(false)
+            break
+        }
+      }
+    }))
+  ], [refreshInbox]) // Only include refreshInbox in dependencies since others are setters
+
+  useKeyboardShortcuts(shortcuts, connected)
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light')
@@ -239,6 +298,12 @@ function App() {
       setLoadedMessages([])
     }
   }, [hasInbox])
+
+  // Track unread messages
+  useEffect(() => {
+    const unread = loadedMessages.filter(m => !m.read).length
+    setUnreadCount(unread)
+  }, [loadedMessages])
 
   const toolTabs: Array<{ id: ActiveTool; label: string }> = [
     { id: 'profile', label: 'Profile' },
@@ -438,6 +503,51 @@ function App() {
           setGroupsRefreshKey(prev => prev + 1)
         }}
       />
+      <SettingsPanel
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
+      <QRCodeModal
+        isOpen={isQRModalOpen}
+        onClose={() => setIsQRModalOpen(false)}
+        address={account?.address?.toString() || ''}
+        title="Share Your Address"
+      />
+      <OnboardingTour
+        isOpen={showOnboarding}
+        onComplete={() => setShowOnboarding(false)}
+      />
+      <PerformanceDashboard
+        isOpen={isPerformanceOpen}
+        onClose={() => setIsPerformanceOpen(false)}
+      />
+      <ShortcutsModal
+        isOpen={isShortcutsOpen}
+        onClose={() => setIsShortcutsOpen(false)}
+        shortcuts={shortcuts}
+      />
+      <ExportChat
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        messages={loadedMessages}
+        chatName={currentView === 'dm' ? 'Direct Messages' : selectedGroup || 'Group Chat'}
+      />
+      <DraftsModal
+        isOpen={isDraftsOpen}
+        onClose={() => setIsDraftsOpen(false)}
+        drafts={drafts}
+        onSelectDraft={(draft) => {
+          if (draft.type === 'dm' && draft.recipient) {
+            setSelectedRecipient(draft.recipient)
+            setCurrentView('dm')
+          } else if (draft.type === 'group' && draft.groupId) {
+            setSelectedGroup(draft.groupId)
+            setCurrentView('groups')
+          }
+        }}
+        onDeleteDraft={removeDraft}
+      />
+      <ConnectionStatus />
 
       <header className="header bg-(--bg-card) border-b border-(--border-color)">
         <div className="container">
@@ -453,10 +563,11 @@ function App() {
             <div className="flex bg-(--bg-secondary) rounded-lg p-1 gap-1">
               <button
                 onClick={() => setCurrentView('dm')}
-                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${currentView === 'dm' ? 'bg-(--bg-card) text-(--primary-brand) shadow-sm' : 'text-(--text-secondary) hover:text-(--text-primary)'
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${currentView === 'dm' ? 'bg-(--bg-card) text-(--primary-brand) shadow-sm' : 'text-(--text-secondary) hover:text-(--text-primary)'
                   }`}
               >
                 Direct Messages
+                {unreadCount > 0 && <UnreadBadge count={unreadCount} size="sm" />}
               </button>
               <button
                 onClick={() => setCurrentView('groups')}
@@ -490,6 +601,7 @@ function App() {
               <button
                 onClick={toggleDarkMode}
                 className="p-2 rounded-full text-(--text-secondary) hover:bg-(--bg-secondary) hover:text-(--text-primary) transition-colors"
+                title="Toggle theme"
               >
                 {darkMode ? (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -508,6 +620,62 @@ function App() {
                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
                   </svg>
                 )}
+              </button>
+
+              <button
+                onClick={() => setIsQRModalOpen(true)}
+                className="p-2 rounded-full text-(--text-secondary) hover:bg-(--bg-secondary) hover:text-(--text-primary) transition-colors"
+                title="Share your address"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="3" width="7" height="7" />
+                  <rect x="14" y="3" width="7" height="7" />
+                  <rect x="3" y="14" width="7" height="7" />
+                  <rect x="14" y="14" width="3" height="3" />
+                  <rect x="18" y="14" width="3" height="3" />
+                  <rect x="14" y="18" width="3" height="3" />
+                  <rect x="18" y="18" width="3" height="3" />
+                </svg>
+              </button>
+
+              <button
+                onClick={() => setIsSettingsOpen(true)}
+                className="p-2 rounded-full text-(--text-secondary) hover:bg-(--bg-secondary) hover:text-(--text-primary) transition-colors"
+                title="Settings"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+              </button>
+
+              {hasDrafts && (
+                <DraftIndicator
+                  draftCount={drafts.length}
+                  onClick={() => setIsDraftsOpen(true)}
+                />
+              )}
+
+              <button
+                onClick={() => setIsPerformanceOpen(true)}
+                className="p-2 rounded-full text-(--text-secondary) hover:bg-(--bg-secondary) hover:text-(--text-primary) transition-colors desktop-only"
+                title="Performance Dashboard"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 3v18h18" />
+                  <path d="m19 9-5 5-4-4-3 3" />
+                </svg>
+              </button>
+
+              <button
+                onClick={() => setIsShortcutsOpen(true)}
+                className="p-2 rounded-full text-(--text-secondary) hover:bg-(--bg-secondary) hover:text-(--text-primary) transition-colors desktop-only"
+                title="Keyboard Shortcuts (Shift + ?)"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="2" y="4" width="20" height="16" rx="2" />
+                  <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h8M5 16h14" />
+                </svg>
               </button>
 
               <button onClick={disconnect} className="btn btn-outline text-sm py-1.5 px-3">
@@ -614,8 +782,8 @@ function App() {
                   type="button"
                   onClick={() => setActiveTool(tool.id)}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${activeTool === tool.id
-                      ? 'bg-(--primary-brand) text-white border-transparent'
-                      : 'bg-(--bg-secondary) text-(--text-secondary) border-(--border-color) hover:text-(--text-primary)'
+                    ? 'bg-(--primary-brand) text-white border-transparent'
+                    : 'bg-(--bg-secondary) text-(--text-secondary) border-(--border-color) hover:text-(--text-primary)'
                     }`}
                   aria-pressed={activeTool === tool.id}
                 >

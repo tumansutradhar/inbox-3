@@ -4,6 +4,7 @@ import { uploadToPinata, getFromPinata, uploadFile } from '../lib/ipfs'
 import { getRealtimeService, type RealtimeMessage } from '../lib/realtime'
 import { aptos } from '../config'
 import type { ReplyTarget } from '../types/reply'
+import EmojiPicker from './EmojiPicker'
 
 const textDecoder = new TextDecoder()
 
@@ -55,6 +56,14 @@ interface GroupMessage {
     isSelf: boolean
     type?: 'text' | 'audio'
     parentId?: string | null
+}
+
+interface RawGroupMessage {
+    sender: string
+    cid: unknown
+    timestamp: string
+    parent_id?: unknown
+    parentId?: unknown // Legacy field support
 }
 
 export default function GroupChat({ contractAddress, groupAddr, onBack }: GroupChatProps) {
@@ -186,9 +195,10 @@ export default function GroupChat({ contractAddress, groupAddr, onBack }: GroupC
                 }
             })
 
-            const rawMessages = response[0] as any[]
+            // removed local interface definition
+            const rawMessages = response[0] as RawGroupMessage[]
             const processedMessages = await Promise.all(
-                rawMessages.map(async (msg: any, index: number) => {
+                rawMessages.map(async (msg, index: number) => {
                     let content = 'Loading...'
                     let type: 'text' | 'audio' = 'text'
                     let parentId: string | null = null
@@ -517,15 +527,23 @@ export default function GroupChat({ contractAddress, groupAddr, onBack }: GroupC
                     </div>
                 )}
                 <form onSubmit={handleSend} className="flex gap-2 sm:gap-3 items-center">
-                    <input
-                        type="text"
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        placeholder={isRecording ? '🎤 Recording...' : 'Type a message...'}
-                        className="flex-1 bg-(--bg-card) rounded-full px-4 sm:px-6 py-3 sm:py-4 text-(--text-primary) focus:outline-none focus:ring-2 focus:ring-(--primary-brand) transition-all placeholder:text-(--text-muted)"
-                        style={{ border: '1px solid #e5e7eb', boxShadow: 'none', fontSize: '15px', minHeight: '48px', touchAction: 'manipulation' }}
-                        disabled={sending || isRecording}
-                    />
+                    <div className="flex-1 relative">
+                        <input
+                            type="text"
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
+                            placeholder={isRecording ? '🎤 Recording...' : 'Type a message...'}
+                            className="w-full bg-(--bg-card) rounded-full pl-4 sm:pl-6 pr-12 py-3 sm:py-4 text-(--text-primary) focus:outline-none focus:ring-2 focus:ring-(--primary-brand) transition-all placeholder:text-(--text-muted)"
+                            style={{ border: '1px solid #e5e7eb', boxShadow: 'none', fontSize: '15px', minHeight: '48px', touchAction: 'manipulation' }}
+                            disabled={sending || isRecording}
+                        />
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                            <EmojiPicker
+                                onSelect={(emoji) => setNewMessage(prev => prev + emoji)}
+                                position="top"
+                            />
+                        </div>
+                    </div>
                     <button
                         type="button"
                         onClick={isRecording ? stopRecording : startRecording}
