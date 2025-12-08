@@ -163,7 +163,7 @@ export default function SendMessage({ contractAddress, onMessageSent, initialRec
     try {
       // Step 1: Encrypt message data
       const messageData = {
-        sender: account.address,
+        sender: account.address.toString(),
         content: message,
         timestamp: Date.now(),
         type: 'text'

@@ -29,7 +29,7 @@ export default function GroupList({ contractAddress, onSelectGroup, onCreateGrou
             const response = await aptos.view({
                 payload: {
                     function: `${contractAddress}::Inbox3::get_user_groups`,
-                    functionArguments: [account.address]
+                    functionArguments: [account.address.toString()]
                 }
             })
 

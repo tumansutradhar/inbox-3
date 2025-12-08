@@ -37,7 +37,7 @@ export default function Inbox({ refreshKey, onMessages }: InboxProps) {
       const messages = await aptos.view({
         payload: {
           function: `${CONTRACT_ADDRESS}::Inbox3::inbox_of`,
-          functionArguments: [account.address]
+          functionArguments: [account.address.toString()]
         }
       });
 

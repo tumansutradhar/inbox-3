@@ -165,8 +165,8 @@ export default function ExportChat({ messages, chatName, isOpen, onClose }: Expo
                                         key={format}
                                         onClick={() => setOptions({ ...options, format })}
                                         className={`p-3 rounded-xl font-medium text-sm transition-colors ${options.format === format
-                                                ? 'bg-(--primary-brand) text-white'
-                                                : 'bg-(--bg-secondary) text-(--text-primary) hover:bg-(--bg-card)'
+                                            ? 'bg-(--primary-brand) text-white'
+                                            : 'bg-(--bg-secondary) text-(--text-primary) hover:bg-(--bg-card)'
                                             }`}
                                     >
                                         {format.toUpperCase()}

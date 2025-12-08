@@ -180,7 +180,7 @@ function App() {
       const response = await aptos.view({
         payload: {
           function: `${CONTRACT_ADDRESS}::Inbox3::inbox_exists`,
-          functionArguments: [account.address]
+          functionArguments: [account.address.toString()]
         }
       })
 
