@@ -1,4 +1,4 @@
-# Inbox3 - Complete Decentralized Messaging Platform
+# Inbox3 - Decentralized Messaging Platform
 
 <div align="center">
 
@@ -9,7 +9,7 @@
 
 **A fully-featured, production-ready decentralized messaging application built on Aptos blockchain with IPFS storage.**
 
-### 🌐 [Try it Live →](https://frontend-virid-sigma-33.vercel.app)
+### 🌐 [Try it Live →](https://inbox3-aptos.vercel.app)
 
 [Quick Start](#quick-start) • [Features](#features) • [Documentation](#documentation) • [Architecture](#architecture)
 
