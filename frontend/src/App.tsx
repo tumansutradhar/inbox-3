@@ -25,7 +25,7 @@ import { getRealtimeService, type RealtimeMessage } from './lib/realtime'
 import { useNotifications } from './lib/notifications'
 import { type SearchableMessage } from './lib/messageSearcher'
 import { aptos, CONTRACT_ADDRESS, NETWORK } from './config'
-import { Button, Card, Badge, StatusIndicator } from './components/ui'
+import { Button, Card, Badge, StatusIndicator, SkipLink } from './components/ui'
 import './App.css'
 
 type AppView = 'dm' | 'groups' | 'showcase'
@@ -496,6 +496,7 @@ function App() {
 
   return (
     <div className="app-container">
+      <SkipLink targetId="main-content" />
       <NotificationSystem notifications={notifications} onDismiss={dismissNotification} />
       <CreateGroupModal
         isOpen={isCreateGroupModalOpen}
@@ -717,7 +718,7 @@ function App() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6">
+      <main id="main-content" className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6" role="main">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px]">
           <section className="space-y-6">
             {networkError && (

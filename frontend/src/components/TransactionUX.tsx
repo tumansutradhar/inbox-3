@@ -75,12 +75,12 @@ export function TransactionModal({
                             <div className="flex-1 min-w-0">
                                 <p
                                     className={`font-medium ${step.status === 'completed'
-                                            ? 'text-(--success-green)'
-                                            : step.status === 'active'
-                                                ? 'text-(--text-primary)'
-                                                : step.status === 'error'
-                                                    ? 'text-(--error-red)'
-                                                    : 'text-(--text-muted)'
+                                        ? 'text-(--success-green)'
+                                        : step.status === 'active'
+                                            ? 'text-(--text-primary)'
+                                            : step.status === 'error'
+                                                ? 'text-(--error-red)'
+                                                : 'text-(--text-muted)'
                                         }`}
                                 >
                                     {step.label}
@@ -180,8 +180,8 @@ export function WalletConnectionModal({
                     <button
                         onClick={() => setSelectedCategory('wallet')}
                         className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${selectedCategory === 'wallet'
-                                ? 'bg-(--bg-card) text-(--text-primary) shadow-sm'
-                                : 'text-(--text-secondary) hover:text-(--text-primary)'
+                            ? 'bg-(--bg-card) text-(--text-primary) shadow-sm'
+                            : 'text-(--text-secondary) hover:text-(--text-primary)'
                             }`}
                     >
                         Crypto Wallets
@@ -189,8 +189,8 @@ export function WalletConnectionModal({
                     <button
                         onClick={() => setSelectedCategory('social')}
                         className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${selectedCategory === 'social'
-                                ? 'bg-(--bg-card) text-(--text-primary) shadow-sm'
-                                : 'text-(--text-secondary) hover:text-(--text-primary)'
+                            ? 'bg-(--bg-card) text-(--text-primary) shadow-sm'
+                            : 'text-(--text-secondary) hover:text-(--text-primary)'
                             }`}
                     >
                         Social Login

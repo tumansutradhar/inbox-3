@@ -190,12 +190,12 @@ export function Sidebar({
                             >
                                 <span
                                     className={`w-2.5 h-2.5 rounded-full ${label === 'Important'
-                                            ? 'bg-(--error-red)'
-                                            : label === 'Work'
-                                                ? 'bg-(--info-blue)'
-                                                : label === 'Personal'
-                                                    ? 'bg-(--success-green)'
-                                                    : 'bg-(--text-muted)'
+                                        ? 'bg-(--error-red)'
+                                        : label === 'Work'
+                                            ? 'bg-(--info-blue)'
+                                            : label === 'Personal'
+                                                ? 'bg-(--success-green)'
+                                                : 'bg-(--text-muted)'
                                         }`}
                                 />
                                 {label}
