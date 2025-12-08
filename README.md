@@ -94,7 +94,7 @@
 
 ## 🌐 Live Demo
 
-**Try Inbox3 now:** [https://frontend-virid-sigma-33.vercel.app](https://frontend-virid-sigma-33.vercel.app)
+**Try Inbox3 now:** [https://inbox3-aptos.vercel.app](https://inbox3-aptos.vercel.app)
 
 ### Getting Started with the Demo
 1. Visit the live demo link above
