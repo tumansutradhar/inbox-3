@@ -71,23 +71,48 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   }
 }
 
-const root = createRoot(document.getElementById('root')!)
+// Show a fallback UI if there's an initialization error
+function showFallback(error: unknown) {
+  const rootEl = document.getElementById('root')
+  if (rootEl) {
+    rootEl.innerHTML = `
+      <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#1a1a2e;color:white;font-family:system-ui,sans-serif;padding:2rem;">
+        <div style="text-align:center;max-width:500px;">
+          <h1 style="font-size:2rem;margin-bottom:1rem;">Inbox3</h1>
+          <p style="color:#888;margin-bottom:1rem;">
+            ${error instanceof Error ? error.message : 'Failed to load the application. Please try refreshing.'}
+          </p>
+          <button onclick="window.location.reload()" style="padding:0.75rem 1.5rem;background:#6366f1;color:white;border:none;border-radius:0.5rem;cursor:pointer;font-size:1rem;">
+            Reload Page
+          </button>
+        </div>
+      </div>
+    `
+  }
+}
 
-root.render(
-  <StrictMode>
-    <ErrorBoundary>
-      <AptosWalletAdapterProvider
-        autoConnect={false}
-        dappConfig={{
-          network: NETWORK,
-          aptosConnectDappId: 'inbox3-dapp'
-        }}
-        onError={(error) => {
-          console.error('Wallet error:', error)
-        }}
-      >
-        <App />
-      </AptosWalletAdapterProvider>
-    </ErrorBoundary>
-  </StrictMode>
-)
+try {
+  const root = createRoot(document.getElementById('root')!)
+
+  root.render(
+    <StrictMode>
+      <ErrorBoundary>
+        <AptosWalletAdapterProvider
+          autoConnect={false}
+          dappConfig={{
+            network: NETWORK,
+            aptosConnectDappId: 'inbox3-dapp'
+          }}
+          onError={(error) => {
+            console.error('Wallet error:', error)
+          }}
+        >
+          <App />
+        </AptosWalletAdapterProvider>
+      </ErrorBoundary>
+    </StrictMode>
+  )
+} catch (error) {
+  console.error('Failed to initialize app:', error)
+  showFallback(error)
+}
