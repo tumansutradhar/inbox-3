@@ -14,6 +14,12 @@
   --primary-brand-hover: #E85D2A;
   --primary-brand-light: #FFF0EB;
 
+  /* Legacy variables for compatibility */
+  --primary-blue: #FF6B35;
+  --primary-blue-light: #FFF0EB;
+  --bg-white: #FFFFFF;
+  --bg-gray: #F3F4F6;
+
   --bg-main: #FAFAF9;
   /* Warm off-white */
   --bg-card: #FFFFFF;
@@ -45,40 +51,92 @@
 
 [data-theme='dark'] {
   /* Modern Zinc-based Dark Theme */
-  --bg-main: #09090b;
+  --bg-main: #0a0a0b;
   /* Deepest background (Zinc 950) */
-  --bg-card: #27272a;
-  /* Card background (Zinc 800) - Lighter for visibility */
-  --bg-secondary: #3f3f46;
-  /* Hover states / Inputs (Zinc 700) */
+  --bg-card: #18181b;
+  /* Card background (Zinc 900) */
+  --bg-secondary: #27272a;
+  /* Hover states / Inputs (Zinc 800) */
+
+  /* Legacy variables for compatibility */
+  --primary-blue: #FF7A4D;
+  --primary-blue-light: rgba(255, 107, 53, 0.2);
+  --bg-white: #18181b;
+  --bg-gray: #27272a;
 
   --text-primary: #fafafa;
   /* High contrast text (Zinc 50) */
-  --text-secondary: #d4d4d8;
-  /* Readable secondary text (Zinc 300) */
-  --text-muted: #a1a1aa;
-  /* Muted but visible (Zinc 400) */
+  --text-secondary: #a1a1aa;
+  /* Readable secondary text (Zinc 400) */
+  --text-muted: #71717a;
+  /* Muted but visible (Zinc 500) */
 
   --border-color: #3f3f46;
   /* Visible borders (Zinc 700) */
 
   /* Adjust brand color for dark mode visibility if needed */
-  --primary-brand: #FF6B35;
-  --primary-brand-hover: #FF8659;
+  --primary-brand: #FF7A4D;
+  --primary-brand-hover: #FF8F65;
   /* Slightly lighter on hover */
-  --primary-brand-light: rgba(255, 107, 53, 0.15);
+  --primary-brand-light: rgba(255, 107, 53, 0.2);
 
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 30px rgba(255, 107, 53, 0.2);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.6);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6), 0 2px 4px -2px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -4px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 30px rgba(255, 107, 53, 0.25);
 
   /* Gradients and effects for dark mode */
-  --gradient-brand: linear-gradient(135deg, #FF6B35 0%, #FF8F65 100%);
+  --gradient-brand: linear-gradient(135deg, #FF7A4D 0%, #FF9B75 100%);
   --gradient-success: linear-gradient(135deg, #10B981 0%, #34D399 100%);
-  --gradient-card: linear-gradient(180deg, rgba(39, 39, 42, 1) 0%, rgba(24, 24, 27, 0.95) 100%);
-  --glass-bg: rgba(39, 39, 42, 0.8);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --gradient-card: linear-gradient(180deg, rgba(24, 24, 27, 1) 0%, rgba(10, 10, 11, 0.95) 100%);
+  --glass-bg: rgba(24, 24, 27, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.08);
+}
+
+/* Dark mode overrides for specific elements */
+[data-theme='dark'] .card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+}
+
+[data-theme='dark'] .input {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .input::placeholder {
+  color: var(--text-muted);
+}
+
+[data-theme='dark'] .message-item {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+[data-theme='dark'] .message-content {
+  background: var(--bg-secondary);
+}
+
+[data-theme='dark'] .security-notice {
+  background: rgba(255, 107, 53, 0.1);
+  border-color: rgba(255, 107, 53, 0.3);
+}
+
+[data-theme='dark'] .btn-outline {
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+[data-theme='dark'] .btn-outline:hover:not(:disabled) {
+  background: var(--primary-brand);
+  color: white;
+  border-color: var(--primary-brand);
+}
+
+[data-theme='dark'] .avatar {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 body {

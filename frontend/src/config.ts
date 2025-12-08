@@ -8,19 +8,19 @@ export const CONTRACT_ADDRESS = "0x2fb49669a943f53c7a0ab469e3fc475b273697f015155
 let _aptos: Aptos | null = null;
 
 export function getAptos(): Aptos {
-  if (!_aptos) {
-    const aptosConfig = new AptosConfig({ network: NETWORK });
-    _aptos = new Aptos(aptosConfig);
-  }
-  return _aptos;
+    if (!_aptos) {
+        const aptosConfig = new AptosConfig({ network: NETWORK });
+        _aptos = new Aptos(aptosConfig);
+    }
+    return _aptos;
 }
 
 // For backward compatibility - use getter
 export const aptos = {
-  view: async (args: Parameters<Aptos['view']>[0]) => {
-    return getAptos().view(args);
-  },
-  waitForTransaction: async (args: Parameters<Aptos['waitForTransaction']>[0]) => {
-    return getAptos().waitForTransaction(args);
-  }
+    view: async (args: Parameters<Aptos['view']>[0]) => {
+        return getAptos().view(args);
+    },
+    waitForTransaction: async (args: Parameters<Aptos['waitForTransaction']>[0]) => {
+        return getAptos().waitForTransaction(args);
+    }
 };

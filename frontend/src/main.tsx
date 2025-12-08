@@ -33,10 +33,10 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ 
-          minHeight: '100vh', 
-          display: 'flex', 
-          alignItems: 'center', 
+        <div style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
           justifyContent: 'center',
           background: '#1a1a2e',
           color: 'white',
@@ -48,7 +48,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
             <p style={{ color: '#888', marginBottom: '1rem' }}>
               {this.state.error?.message || 'An unexpected error occurred'}
             </p>
-            <button 
+            <button
               onClick={() => window.location.reload()}
               style={{
                 padding: '0.75rem 1.5rem',
