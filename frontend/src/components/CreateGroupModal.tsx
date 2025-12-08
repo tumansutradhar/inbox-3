@@ -42,7 +42,7 @@ export default function CreateGroupModal({ isOpen, onClose, contractAddress, onG
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
             <div className="card w-full max-w-md p-6 animate-fade-in">
                 <h2 className="text-xl font-bold mb-4">Create New Group</h2>
 

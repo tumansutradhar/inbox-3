@@ -65,7 +65,7 @@ export function Tooltip({
             {isVisible && (
                 <div
                     className={`
-            absolute z-50 ${positionStyles[position]}
+            absolute z-[130] ${positionStyles[position]}
             px-3 py-1.5 text-xs font-medium
             bg-(--text-primary) text-(--bg-card)
             rounded-lg whitespace-nowrap

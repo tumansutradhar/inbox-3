@@ -186,14 +186,16 @@
   --transition-spring: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 
   /* ===== Z-INDEX SCALE ===== */
-  --z-dropdown: 100;
-  --z-sticky: 200;
-  --z-fixed: 300;
-  --z-modal-backdrop: 400;
-  --z-modal: 500;
-  --z-popover: 600;
-  --z-tooltip: 700;
-  --z-toast: 800;
+  /* Using values compatible with Tailwind's z-* utilities */
+  --z-base: 0;
+  --z-dropdown: 40;
+  --z-sticky: 45;
+  --z-fixed: 50;
+  --z-modal-backdrop: 100;
+  --z-modal: 110;
+  --z-popover: 120;
+  --z-tooltip: 130;
+  --z-toast: 140;
 
   /* ===== GRADIENTS & EFFECTS ===== */
   --gradient-brand: linear-gradient(135deg, #FF6B35 0%, #FF8F65 100%);

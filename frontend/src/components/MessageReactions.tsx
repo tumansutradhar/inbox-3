@@ -61,7 +61,7 @@ export default function MessageReactions({ messageId, reactions = [], onReact, c
                 </button>
 
                 {showPicker && (
-                    <div className="absolute bottom-full mb-2 left-0 bg-(--bg-card) rounded-xl shadow-lg border border-(--border-color) p-2 flex gap-1 animate-scale-in z-50">
+                    <div className="absolute bottom-full mb-2 left-0 bg-(--bg-card) rounded-xl shadow-lg border border-(--border-color) p-2 flex gap-1 animate-scale-in z-[120]">
                         {QUICK_REACTIONS.map(emoji => (
                             <button
                                 key={emoji}

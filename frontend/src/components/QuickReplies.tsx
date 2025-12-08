@@ -46,7 +46,7 @@ export default function QuickReplies({ onSelect, isOpen, onClose }: QuickReplies
     if (!isOpen) return null
 
     return (
-        <div className="absolute bottom-full mb-2 left-0 right-0 bg-(--bg-card) rounded-2xl shadow-xl border border-(--border-color) overflow-hidden animate-scale-in z-50">
+        <div className="absolute bottom-full mb-2 left-0 right-0 bg-(--bg-card) rounded-2xl shadow-xl border border-(--border-color) overflow-hidden animate-scale-in z-[120]">
             {/* Header */}
             <div className="p-3 border-b border-(--border-color) bg-(--bg-secondary)">
                 <div className="flex items-center justify-between mb-2">

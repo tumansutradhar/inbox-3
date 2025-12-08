@@ -144,7 +144,7 @@ export default function PerformanceDashboard({ isOpen, onClose }: PerformanceDas
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 animate-fade-in">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 animate-fade-in">
             <div className="bg-(--bg-card) rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-(--border-color) bg-linear-to-r from-blue-500 to-purple-600 text-white">

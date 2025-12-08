@@ -10,6 +10,7 @@
   min-height: 100vh;
   min-height: 100dvh;
   background: var(--bg-main);
+  isolation: isolate; /* Create stacking context */
 }
 
 .app-shell__topnav {
@@ -18,7 +19,7 @@
   left: 0;
   right: 0;
   height: var(--topnav-height, 56px);
-  z-index: var(--z-fixed);
+  z-index: 50; /* Fixed nav z-index */
   background: var(--bg-card);
   border-bottom: 1px solid var(--border-color);
   backdrop-filter: blur(12px);
@@ -30,6 +31,10 @@
   flex: 1;
   margin-top: var(--topnav-height, 56px);
   position: relative;
+  min-height: 0;
+  height: calc(100vh - var(--topnav-height, 56px));
+  height: calc(100dvh - var(--topnav-height, 56px));
+  overflow: hidden;
 }
 
 /* ===== OVERLAY (Mobile) ===== */
@@ -75,6 +80,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   scroll-behavior: smooth;
+  height: 100%;
 }
 
 /* ===== RIGHT PANE ===== */
@@ -85,10 +91,8 @@
   background: var(--bg-card);
   border-left: 1px solid var(--border-color);
   overflow-y: auto;
-  position: sticky;
-  top: var(--topnav-height, 56px);
-  height: calc(100vh - var(--topnav-height, 56px));
-  height: calc(100dvh - var(--topnav-height, 56px));
+  overflow-x: hidden;
+  height: 100%;
 }
 
 /* ===== RESPONSIVE BREAKPOINTS ===== */
@@ -96,10 +100,9 @@
 /* Tablet (768px+) - 2 columns */
 @media (min-width: 768px) {
   .app-shell__sidebar {
-    position: sticky;
-    top: var(--topnav-height, 56px);
-    height: calc(100vh - var(--topnav-height, 56px));
-    height: calc(100dvh - var(--topnav-height, 56px));
+    position: relative;
+    top: 0;
+    height: 100%;
     transform: translateX(0);
     width: var(--sidebar-collapsed-width, 64px);
     z-index: auto;
@@ -110,7 +113,8 @@
   }
 
   .app-shell__right {
-    display: block;
+    display: flex;
+    flex-direction: column;
     width: var(--right-pane-width-tablet, 320px);
   }
 }
@@ -297,9 +301,7 @@
 }
 
 .center-pane__header {
-  position: sticky;
-  top: 0;
-  z-index: var(--z-sticky);
+  flex-shrink: 0;
   background: var(--bg-main);
   padding: var(--space-4);
   border-bottom: 1px solid var(--border-color);
@@ -307,6 +309,7 @@
 
 .center-pane__content {
   flex: 1;
+  min-height: 0;
 }
 
 .center-pane__content--padded {
@@ -326,12 +329,11 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
 }
 
 .right-pane__header {
-  position: sticky;
-  top: 0;
-  z-index: var(--z-sticky);
+  flex-shrink: 0;
   background: var(--bg-card);
   padding: var(--space-4);
   border-bottom: 1px solid var(--border-color);
@@ -340,6 +342,8 @@
 .right-pane__content {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
 }
 
 .right-pane__content--padded {

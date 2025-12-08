@@ -332,7 +332,7 @@ function App() {
           title={walletModalMode === 'social' ? 'Sign in with Social' : 'Connect Wallet'}
         />
 
-        <div className="absolute top-6 right-6 z-50">
+        <div className="absolute top-6 right-6 z-[60]">
           <button
             onClick={toggleDarkMode}
             className="p-2 rounded-full bg-(--bg-card) border border-(--border-color) text-(--text-primary) hover:bg-(--bg-secondary) transition-colors shadow-sm"

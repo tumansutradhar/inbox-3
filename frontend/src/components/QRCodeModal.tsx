@@ -24,7 +24,7 @@ export default function QRCodeModal({ isOpen, onClose, address, title = 'Your Wa
     if (!isOpen) return null
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 animate-fade-in">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 animate-fade-in">
             <div className="bg-(--bg-card) rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-(--border-color)">

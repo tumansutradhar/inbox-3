@@ -59,7 +59,7 @@ export default function EmojiPicker({ onSelect, position = 'bottom' }: EmojiPick
 
             {isOpen && (
                 <div
-                    className={`absolute ${position === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'} right-0 z-50 w-[320px] bg-(--bg-card) rounded-2xl shadow-xl border border-(--border-color) overflow-hidden animate-fade-in`}
+                    className={`absolute ${position === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'} right-0 z-[120] w-[320px] bg-(--bg-card) rounded-2xl shadow-xl border border-(--border-color) overflow-hidden animate-fade-in`}
                 >
                     {/* Quick Reactions */}
                     <div className="flex gap-1 p-3 border-b border-(--border-color) bg-(--bg-secondary)">
