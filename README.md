@@ -5,8 +5,11 @@
 ![Inbox3 Logo](https://img.shields.io/badge/Inbox3-Decentralized_Messaging-FF6B35?style=for-the-badge)
 [![Aptos](https://img.shields.io/badge/Aptos-Blockchain-00D4FF?style=for-the-badge)](https://aptoslabs.com/)
 [![IPFS](https://img.shields.io/badge/IPFS-Storage-65C2CB?style=for-the-badge)](https://ipfs.io/)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000000?style=for-the-badge&logo=vercel)](https://frontend-virid-sigma-33.vercel.app)
 
 **A fully-featured, production-ready decentralized messaging application built on Aptos blockchain with IPFS storage.**
+
+### 🌐 [Try it Live →](https://frontend-virid-sigma-33.vercel.app)
 
 [Quick Start](#quick-start) • [Features](#features) • [Documentation](#documentation) • [Architecture](#architecture)
 
@@ -86,6 +89,20 @@
 | **Wallet-based Auth** | No passwords, no accounts |
 | **End-to-end Encryption** | Messages encrypted via NaCl Box |
 | **No Central Server** | Truly decentralized architecture |
+
+---
+
+## 🌐 Live Demo
+
+**Try Inbox3 now:** [https://frontend-virid-sigma-33.vercel.app](https://frontend-virid-sigma-33.vercel.app)
+
+### Getting Started with the Demo
+1. Visit the live demo link above
+2. Install [Petra Wallet](https://petra.app/) or [Martian Wallet](https://martianwallet.xyz/) browser extension
+3. Switch your wallet to **Aptos Testnet**
+4. Get free testnet tokens from the [Aptos Faucet](https://aptos.dev/en/network/faucet)
+5. Connect your wallet and create your inbox
+6. Start messaging!
 
 ---
 
@@ -339,6 +356,43 @@ Contributions are welcome! Please:
 
 ---
 
+## 🚀 Deployment
+
+### Deploy to Vercel (Recommended)
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/tumansutradhar/inbox3&project-name=inbox3&root-directory=frontend)
+
+**Manual Deployment:**
+
+```bash
+# Install Vercel CLI
+npm install -g vercel
+
+# Navigate to frontend
+cd frontend
+
+# Deploy to production
+vercel --prod
+```
+
+### Deploy to Netlify
+
+1. Connect your GitHub repository to Netlify
+2. Set build command: `pnpm build`
+3. Set publish directory: `dist`
+4. Set base directory: `frontend`
+
+### Environment Variables
+
+For production deployments, you may want to configure:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `VITE_CONTRACT_ADDRESS` | Aptos smart contract address | Pre-configured for testnet |
+| `VITE_NETWORK` | Aptos network (testnet/mainnet) | `testnet` |
+
+---
+
 ## 📄 License
 
 This project is open source and available under the MIT License.
@@ -348,9 +402,10 @@ This project is open source and available under the MIT License.
 ## 🙏 Acknowledgments
 
 - **Aptos Foundation** - Blockchain infrastructure
-- **Pinata** - IPFS pinning service
+- **Pinata** - IPFS pinning service  
 - **React Team** - Amazing framework
 - **Tailwind CSS** - Utility-first CSS
+- **Vercel** - Deployment platform
 
 ---
 

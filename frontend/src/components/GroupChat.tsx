@@ -227,7 +227,7 @@ export default function GroupChat({ contractAddress, groupAddr, onBack }: GroupC
                         sender: msg.sender,
                         content,
                         timestamp: timestampSeconds * 1000,
-                        isSelf: msg.sender === account.address,
+                        isSelf: msg.sender === account.address?.toString(),
                         type,
                         parentId
                     }

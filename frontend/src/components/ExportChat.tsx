@@ -2,7 +2,8 @@ import { useState } from 'react'
 
 interface Message {
     sender: string
-    content: string
+    content?: string
+    plain?: string
     timestamp: number
     type?: string
 }
@@ -35,7 +36,7 @@ export default function ExportChat({ messages, chatName, isOpen, onClose }: Expo
             messageCount: messages.length,
             messages: messages.map(m => ({
                 sender: m.sender,
-                content: m.content,
+                content: m.content || m.plain || '',
                 timestamp: options.includeTimestamps ? m.timestamp : undefined,
                 type: options.includeMetadata ? m.type : undefined
             }))
@@ -67,7 +68,8 @@ export default function ExportChat({ messages, chatName, isOpen, onClose }: Expo
         csv += '\n'
 
         messages.forEach(msg => {
-            const escapedContent = `"${msg.content.replace(/"/g, '""')}"`
+            const messageContent = msg.content || msg.plain || ''
+            const escapedContent = `"${messageContent.replace(/"/g, '""')}"`
             let row = `"${msg.sender}",${escapedContent}`
 
             if (options.includeTimestamps) {

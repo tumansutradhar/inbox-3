@@ -114,8 +114,10 @@ export const rotateKey = async (currentPrivHex: string): Promise<{ newPrivHex: s
  * This helps in supporting multiple key versions for forward secrecy.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const getKeyVersion = (pubHex: string): number => {
+export const getKeyVersion = (_pubHex: string): number => {
   // Stub: always return version 1
+  // The _pubHex parameter will be used in future implementations
+  // to look up the key version from a registry
   return 1;
 }
 

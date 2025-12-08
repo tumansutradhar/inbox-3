@@ -72,6 +72,12 @@ function App() {
   const { removeDraft, getAllDrafts, hasDrafts } = useDrafts()
   const drafts = getAllDrafts()
 
+  // Refresh callback - declare before useMemo that uses it
+  const refreshInbox = useCallback(() => {
+    console.log('Triggering inbox refresh')
+    setRefreshKey(prev => prev + 1)
+  }, [])
+
   // Keyboard shortcuts
   const shortcuts = useMemo(() => [
     ...DEFAULT_SHORTCUTS.map(s => ({
@@ -114,11 +120,6 @@ function App() {
   }, [darkMode])
 
   const toggleDarkMode = () => setDarkMode(!darkMode)
-
-  const refreshInbox = useCallback(() => {
-    console.log('Triggering inbox refresh')
-    setRefreshKey(prev => prev + 1)
-  }, [])
 
   const handleRealtimeEvent = useCallback((event: RealtimeMessage) => {
     console.log('Real-time event received:', event)
