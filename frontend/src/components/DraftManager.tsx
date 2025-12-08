@@ -120,7 +120,7 @@ export function DraftsModal({ isOpen, onClose, drafts, onSelectDraft, onDeleteDr
     if (!isOpen) return null
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 animate-fade-in">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/50 animate-fade-in">
             <div className="bg-(--bg-card) rounded-3xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-(--border-color)">

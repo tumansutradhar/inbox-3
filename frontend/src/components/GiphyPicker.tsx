@@ -56,7 +56,7 @@ export default function GiphyPicker({ onSelect, onClose }: GiphyPickerProps) {
     }, [search])
 
     return (
-        <div className="absolute bottom-full mb-2 left-0 w-80 bg-(--bg-card) rounded-2xl shadow-xl border border-(--border-color) overflow-hidden animate-scale-in z-[120]">
+        <div className="absolute bottom-full mb-2 left-0 w-80 bg-(--bg-card) rounded-2xl shadow-xl border border-(--border-color) overflow-hidden animate-scale-in z-120">
             <div className="p-3 border-b border-(--border-color) bg-(--bg-secondary) flex items-center gap-2">
                 <div className="relative flex-1">
                     <input

@@ -46,7 +46,7 @@ export default function ConnectionStatus({ compact = false }: ConnectionStatusPr
     if (!showNotification && isOnline) return null
 
     return (
-        <div className={`fixed top-20 right-4 z-[140] animate-slide-in ${isOnline ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+        <div className={`fixed top-20 right-4 z-140 animate-slide-in ${isOnline ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
             } border rounded-xl shadow-lg p-4 max-w-sm`}>
             <div className="flex items-start gap-3">
                 <div className={`p-2 rounded-full ${isOnline ? 'bg-green-100' : 'bg-red-100'

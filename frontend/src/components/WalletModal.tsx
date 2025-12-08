@@ -12,7 +12,7 @@ export default function WalletModal({ isOpen, onClose, wallets, onConnect, title
     if (!isOpen) return null
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 animate-fade-in">
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
             <div className="relative w-full max-w-md bg-(--bg-card) rounded-2xl shadow-2xl border border-(--border-color) overflow-hidden transform transition-all scale-100">
                 <div className="p-6 border-b border-(--border-color) flex justify-between items-center">
