@@ -9,6 +9,12 @@ interface Settings {
     compactMode: boolean
     showTimestamps: boolean
     theme: 'light' | 'dark' | 'system'
+    // Do Not Disturb settings
+    dndEnabled: boolean
+    dndScheduleEnabled: boolean
+    dndStartTime: string
+    dndEndTime: string
+    dndDays: number[] // 0 = Sunday, 6 = Saturday
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -18,7 +24,13 @@ const DEFAULT_SETTINGS: Settings = {
     refreshInterval: 30,
     compactMode: false,
     showTimestamps: true,
-    theme: 'system'
+    theme: 'system',
+    // Do Not Disturb defaults
+    dndEnabled: false,
+    dndScheduleEnabled: false,
+    dndStartTime: '22:00',
+    dndEndTime: '08:00',
+    dndDays: [0, 1, 2, 3, 4, 5, 6] // All days
 }
 
 interface SettingsPanelProps {
@@ -89,6 +101,78 @@ export default function SettingsPanel({ isOpen, onClose, onSettingsChange }: Set
                                 checked={settings.soundEnabled}
                                 onChange={(v) => updateSetting('soundEnabled', v)}
                             />
+                        </div>
+                    </section>
+
+                    {/* Do Not Disturb Section */}
+                    <section>
+                        <h3 className="text-sm font-semibold text-(--text-primary) mb-3 flex items-center gap-2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="M4.93 4.93l14.14 14.14" />
+                            </svg>
+                            Do Not Disturb
+                        </h3>
+                        <div className="space-y-3">
+                            <ToggleSetting
+                                label="Enable DND"
+                                description="Silence all notifications"
+                                checked={settings.dndEnabled}
+                                onChange={(v) => updateSetting('dndEnabled', v)}
+                            />
+                            <ToggleSetting
+                                label="Schedule DND"
+                                description="Automatically enable during set hours"
+                                checked={settings.dndScheduleEnabled}
+                                onChange={(v) => updateSetting('dndScheduleEnabled', v)}
+                            />
+                            {settings.dndScheduleEnabled && (
+                                <>
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex-1">
+                                            <label className="text-xs text-(--text-muted) block mb-1">Start</label>
+                                            <input
+                                                type="time"
+                                                value={settings.dndStartTime}
+                                                onChange={(e) => updateSetting('dndStartTime', e.target.value)}
+                                                className="w-full px-3 py-2 rounded-lg bg-(--bg-secondary) text-(--text-primary) text-sm border border-(--border-color) focus:outline-none focus:ring-2 focus:ring-(--primary-brand)"
+                                            />
+                                        </div>
+                                        <div className="flex-1">
+                                            <label className="text-xs text-(--text-muted) block mb-1">End</label>
+                                            <input
+                                                type="time"
+                                                value={settings.dndEndTime}
+                                                onChange={(e) => updateSetting('dndEndTime', e.target.value)}
+                                                className="w-full px-3 py-2 rounded-lg bg-(--bg-secondary) text-(--text-primary) text-sm border border-(--border-color) focus:outline-none focus:ring-2 focus:ring-(--primary-brand)"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-(--text-muted) block mb-2">Active Days</label>
+                                        <div className="flex gap-1">
+                                            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+                                                <button
+                                                    key={index}
+                                                    onClick={() => {
+                                                        const newDays = settings.dndDays.includes(index)
+                                                            ? settings.dndDays.filter(d => d !== index)
+                                                            : [...settings.dndDays, index]
+                                                        updateSetting('dndDays', newDays)
+                                                    }}
+                                                    className={`w-8 h-8 rounded-full text-xs font-medium transition-colors ${
+                                                        settings.dndDays.includes(index)
+                                                            ? 'bg-(--primary-brand) text-white'
+                                                            : 'bg-(--bg-secondary) text-(--text-muted) hover:bg-(--bg-tertiary)'
+                                                    }`}
+                                                >
+                                                    {day}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </section>
 
