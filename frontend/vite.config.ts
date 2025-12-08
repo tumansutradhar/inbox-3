@@ -13,32 +13,13 @@ export default defineConfig({
     }
   },
   build: {
-    chunkSizeWarningLimit: 2000,
+    chunkSizeWarningLimit: 3000,
     target: 'esnext',
     commonjsOptions: {
       // Transform CommonJS modules to ESM
       transformMixedEsModules: true,
       include: [/node_modules/]
-    },
-    rollupOptions: {
-      output: {
-        manualChunks(id: string) {
-          if (!id.includes('node_modules')) {
-            return undefined
-          }
-          // Keep all Aptos-related packages together to avoid initialization order issues
-          if (id.includes('@aptos-labs') || id.includes('tweetnacl') || id.includes('eventemitter3')) {
-            return 'vendor_aptos'
-          }
-          if (id.includes('react')) {
-            return 'vendor_react'
-          }
-          if (id.includes('tailwindcss')) {
-            return 'vendor_tailwind'
-          }
-          return 'vendor_misc'
-        }
-      }
     }
+    // Disable manual chunks to avoid circular dependency issues with Aptos SDK
   }
 })
