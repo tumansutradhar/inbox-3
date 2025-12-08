@@ -57,7 +57,8 @@ export default function Inbox({ refreshKey, onMessages }: InboxProps) {
         try {
           console.log(`Processing message ${index}:`, m);
 
-          let messageContent = `Message #${index} from ${m.sender.slice(0, 6)}...${m.sender.slice(-4)}`;
+          const timestamp = new Date(m.timestamp * 1000).toLocaleString();
+          let messageContent = `Encrypted message received at ${timestamp}`;
           let cidString = '';
           let messageType: 'text' | 'audio' = 'text';
 
@@ -76,22 +77,21 @@ export default function Inbox({ refreshKey, onMessages }: InboxProps) {
             }
           } catch (decodeError) {
             console.log('CID decode failed:', decodeError);
-            cidString = 'decode-failed';
+            cidString = '';
           }
 
           try {
-            if (cidString && cidString !== 'decode-failed') {
-              const timestamp = new Date(m.timestamp * 1000).toLocaleString();
-
+            if (cidString && cidString.length > 0) {
               try {
                 const response = await fetch(`https://gateway.pinata.cloud/ipfs/${cidString}`);
                 if (response.ok) {
                   const data = await response.json();
-                  messageContent = data.content || data.message || `Message sent at ${timestamp}`;
+                  messageContent = data.content || data.message || `Message received at ${timestamp}`;
                   messageType = data.type || 'text';
                 }
               } catch (fetchError) {
                 console.log('IPFS fetch failed:', fetchError);
+                // Keep the default "Encrypted message received" text
               }
             }
           } catch (contentError) {
@@ -223,21 +223,18 @@ export default function Inbox({ refreshKey, onMessages }: InboxProps) {
                         <span className="text-xs text-(--text-muted)">
                           {new Date(m.timestamp * 1000).toLocaleString()}
                         </span>
-                      </div>
-                      <span className="text-[11px] font-mono text-(--text-secondary) break-all select-all hidden sm:block">
-                        {m.sender}
-                      </span>
+                    </div>
                     </div>
                   </div>
                   {!m.read && (
                     <Badge variant="warning" size="sm">New</Badge>
                   )}
                 </div>
-                <div className="ml-[52px]">
+                <div className="ml-[52px] mt-2">
                   {m.type === 'audio' ? (
-                    <audio controls src={m.plain} className="w-full mt-2" />
+                    <audio controls src={m.plain} className="w-full" />
                   ) : (
-                    <p className="text-sm text-(--text-primary) leading-relaxed">{m.plain}</p>
+                    <p className="text-sm text-(--text-primary) leading-relaxed bg-(--bg-secondary) rounded-lg p-3">{m.plain}</p>
                   )}
                 </div>
                 <div className="flex items-center justify-between mt-3 ml-[52px]">
