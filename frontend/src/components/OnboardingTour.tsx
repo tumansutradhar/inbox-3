@@ -131,7 +131,7 @@ export default function OnboardingTour({ isOpen, onComplete }: OnboardingTourPro
                 {/* Content */}
                 <div className="p-8 text-center">
                     {/* Icon */}
-                    <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-(--primary-brand) to-orange-400 flex items-center justify-center text-white">
+                    <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-linear-to-br from-(--primary-brand) to-orange-400 flex items-center justify-center text-white">
                         {step.icon}
                     </div>
 

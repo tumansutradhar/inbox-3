@@ -146,7 +146,7 @@ export default function PerformanceDashboard({ isOpen, onClose }: PerformanceDas
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 animate-fade-in">
             <div className="bg-(--bg-card) rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-(--border-color) bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+                <div className="flex items-center justify-between p-6 border-b border-(--border-color) bg-linear-to-r from-blue-500 to-purple-600 text-white">
                     <div>
                         <h2 className="text-2xl font-bold">Performance Dashboard</h2>
                         <p className="text-sm opacity-90 mt-1">Your Inbox3 usage statistics</p>
