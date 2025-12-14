@@ -82,17 +82,17 @@ export default function NotificationSystem({ notifications, onDismiss }: Notific
   }
 
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-3 max-w-sm">
+    <div className="fixed top-4 right-4 z-140 space-y-3 max-w-sm">
       {notifications.map(notification => (
         <div key={notification.id} className={`notification ${getNotificationStyle(notification.type)}`}>
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 {getNotificationIcon(notification.type)}
               </div>
               <p className="text-sm font-medium">{notification.message}</p>
             </div>
-            <button onClick={() => onDismiss(notification.id)} className="ml-3 flex-shrink-0 w-5 h-5 rounded flex items-center justify-center hover:bg-white hover:bg-opacity-20 transition-colors">
+            <button onClick={() => onDismiss(notification.id)} className="ml-3 shrink-0 w-5 h-5 rounded flex items-center justify-center hover:bg-white hover:bg-opacity-20 transition-colors">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M18 6L6 18" />
                 <path d="M6 6L18 18" />

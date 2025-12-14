@@ -6,12 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "test": "vitest run",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@aptos-labs/ts-sdk": "^3.1.2",
-    "@aptos-labs/wallet-adapter-react": "^7.0.1",
+    "@aptos-labs/ts-sdk": "5.1.6",
+    "@aptos-labs/wallet-adapter-react": "^7.2.2",
     "@tailwindcss/vite": "^4.1.11",
     "noble-ed25519": "^1.2.6",
     "react": "^19.1.0",
@@ -28,8 +29,10 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.2.0",
+    "jsdom": "^27.2.0",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.34.1",
-    "vite": "^7.0.0"
+    "vite": "^7.0.0",
+    "vitest": "^1.5.0"
   }
 }
