@@ -17,6 +17,14 @@
 
 ---
 
+## 📱 App Screenshots
+
+![Inbox3 App Screenshots](https://github.com/user-attachments/assets/e3c8e0f5-4e4a-4b6e-8e3a-0c8f9e3b9e3a)
+
+*Inbox3 mobile interface showcasing secure messaging, wallet selection, and encrypted conversations*
+
+---
+
 **Inbox3 is now a complete, production-ready decentralized messaging platform with 40+ features!**
 
 ###  Core Infrastructure
