@@ -19,6 +19,16 @@
 
 <div align="center">
 
+<img src="frontend/public/Hand-mockup.png" alt="Inbox3 Hero" width="300"/>
+
+*Experience the future of decentralized communication*
+
+</div>
+
+---
+
+<div align="center">
+
 ![Inbox3 App Mockup](frontend/public/chats-mockup.png)
 
 *Secure messaging reimagined — Connect your wallet, select your provider, and start messaging on the blockchain*
