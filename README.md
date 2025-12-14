@@ -116,6 +116,16 @@
 
 ---
 
+<div align="center">
+
+<img src="frontend/public/Hand-mockup.png" alt="Inbox3 Mobile App" width="280"/>
+
+*Your messages, your keys, your privacy*
+
+</div>
+
+---
+
 ## 📦 Quick Start
 
 ### Prerequisites
@@ -420,10 +430,6 @@ This project is open source and available under the MIT License.
 ---
 
 <div align="center">
-
-<img src="frontend/public/Hand-mockup.png" alt="Inbox3 Mobile App" width="280"/>
-
-*Your messages, your keys, your privacy*
 
 **Built with ❤️ for the decentralized future**
 
