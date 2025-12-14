@@ -19,16 +19,6 @@
 
 <div align="center">
 
-<img src="frontend/public/Hand-mockup.png" alt="Inbox3 Hero" width="300"/>
-
-*Experience the future of decentralized communication*
-
-</div>
-
----
-
-<div align="center">
-
 ![Inbox3 App Mockup](frontend/public/chats-mockup.png)
 
 *Secure messaging reimagined — Connect your wallet, select your provider, and start messaging on the blockchain*
@@ -430,6 +420,10 @@ This project is open source and available under the MIT License.
 ---
 
 <div align="center">
+
+<img src="frontend/public/Hand-mockup.png" alt="Inbox3 Mobile App" width="280"/>
+
+*Your messages, your keys, your privacy*
 
 **Built with ❤️ for the decentralized future**
 
