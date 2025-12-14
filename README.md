@@ -17,11 +17,13 @@
 
 ---
 
-## 📱 App Screenshots
+<div align="center">
 
-![Inbox3 App Screenshots](https://github.com/user-attachments/assets/e3c8e0f5-4e4a-4b6e-8e3a-0c8f9e3b9e3a)
+![Inbox3 App Mockup](frontend/public/chats-mockup.png)
 
-*Inbox3 mobile interface showcasing secure messaging, wallet selection, and encrypted conversations*
+*Secure messaging reimagined — Connect your wallet, select your provider, and start messaging on the blockchain*
+
+</div>
 
 ---
 
