@@ -1,185 +1,125 @@
-# 🎉 Inbox3 - Decentralized Messaging on Aptos (FULLY WORKING!)
+# Inbox3
 
-A decentralized messaging application built on the Aptos blockchain with IPFS storage for message content and end-to-end encryption.
+Decentralized messaging on the Aptos blockchain with IPFS-backed message storage and a React + Vite frontend. Users connect an Aptos wallet, create an inbox, send messages (stored on IPFS), and read/mark messages on-chain.
 
-## ✅ STATUS: FULLY FUNCTIONAL
+## About The Project
 
-**All issues have been resolved and the app is now working perfectly!**
+Inbox3 solves the need for wallet-to-wallet messaging on Aptos by combining a Move module (on-chain inbox and messages) with a lightweight React app. Messages are stored on IPFS (via Pinata) while metadata and state (sender, CID, read status) live on-chain. Building this involved Move module design, wallet adapter integration, and handling rate limits with a conservative real-time refresh strategy.
 
-- ✅ Smart contract deployed to Aptos DevNet
-- ✅ All view functions working correctly  
-- ✅ All entry functions working correctly
-- ✅ Frontend integration complete
-- ✅ IPFS storage implemented (with Pinata)
-- ✅ Error handling improved
-- ✅ Complete documentation provided
+## Built With
 
-## 🚀 Quick Start
+- React 19, TypeScript, Vite, Tailwind CSS
+- Aptos Move (AptosFramework), Aptos CLI, @aptos-labs/ts-sdk
+- Wallet adapter: @aptos-labs/wallet-adapter-react (Petra/Martian)
+- IPFS pinning: Pinata
 
-1. **Start the frontend**:
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
+## Getting Started
 
-2. **Open browser**: http://localhost:5173
-
-3. **Connect wallet**: Use Petra or Martian wallet
-
-4. **Start messaging**: Create inbox and send messages!
-
-## Architecture
-
-### Smart Contract (`smart-contract/`)
-- **Language**: Move (Aptos blockchain)
-- **Contract Address**: `0xf1768eb79d367572b8e436f8e3bcfecf938eeaf6656a65f73773c50c43b71d67`
-- **Functions**:
-  - `create_inbox()`: Initialize user's inbox
-  - `send_message()`: Send message to another user
-  - `mark_read()`: Mark message as read
-  - `inbox_of()`: Get all messages for a user
-  - `inbox_exists()`: Check if user has an inbox
-
-### Frontend (`frontend/`)
-- **Framework**: React 19 + TypeScript + Vite
-- **Styling**: Tailwind CSS
-- **Blockchain**: Aptos SDK
-- **Storage**: Pinata IPFS pinning service
-- **Wallet**: Aptos Wallet Adapter
-
-## Setup Instructions
+Instructions to set up locally.
 
 ### Prerequisites
-- Node.js 18+ and pnpm
-- Aptos CLI (for smart contract deployment)
-- Pinata account (for IPFS storage)
 
-### Frontend Setup
+- Node.js 18+ and pnpm (or npm)
+- Aptos CLI (for Move compile/publish)
+- Aptos-compatible wallet on DevNet (Petra or Martian)
+- Optional: Pinata API key/secret for IPFS pinning
 
-1. **Install dependencies**:
+### Installation
+
+1. Clone the repo
+   ```bash
+   git clone <repo-url>
+   cd inbox-3
+   ```
+
+2. Install frontend dependencies
    ```bash
    cd frontend
    pnpm install
    ```
 
-2. **Environment Configuration**:
+3. Set up environment variables
    ```bash
-   cp .env.example .env
+   # create frontend/.env
+   VITE_PINATA_API_KEY=your_pinata_api_key
+   VITE_PINATA_SECRET_KEY=your_pinata_secret_key
+   VITE_PINATA_GATEWAY=gateway.pinata.cloud
+   VITE_APTOS_NETWORK=devnet
+   VITE_CONTRACT_ADDRESS=0xf1768eb79d367572b8e436f8e3bcfecf938eeaf6656a65f73773c50c43b71d67
    ```
-   
-   Edit `.env` and add your Pinata credentials:
-   ```
-   VITE_PINATA_API_KEY=your_pinata_api_key_here
-   VITE_PINATA_SECRET_KEY=your_pinata_secret_key_here
-   ```
-   
-   **Get Pinata credentials:** See `PINATA_SETUP.md` for detailed instructions.
 
-3. **Run development server**:
+4. Run the application (frontend)
    ```bash
    pnpm dev
    ```
+   Open http://localhost:5173 and connect your wallet.
 
-### Smart Contract Setup
-
-1. **Install Aptos CLI**:
-   ```bash
-   curl -fsSL "https://aptos.dev/scripts/install_cli.py" | python3
-   ```
-
-2. **Initialize Aptos account**:
+5. Deploy or update the Move contract (optional if you need a new address)
    ```bash
    cd smart-contract
-   aptos init
+   aptos init              # once, sets profile/account
+   aptos move compile
+   aptos move publish --profile devnet --assume-yes
    ```
-
-3. **Deploy contract**:
-   ```bash
-   aptos move publish
-   ```
+   Update `VITE_CONTRACT_ADDRESS` if the on-chain address changes.
 
 ## Usage
 
-1. **Connect Wallet**: Use an Aptos-compatible wallet
-2. **Create Inbox**: First-time users must create an inbox
-3. **Send Messages**: Enter recipient address and message
-4. **Read Messages**: View received messages in your inbox
-5. **Mark as Read**: Click to mark messages as read
+- Connect wallet (DevNet) in the UI
+- Create inbox (one-time per address)
+- Send messages by recipient address (stores CID on-chain; content on IPFS)
+- Read and mark messages as read; auto-refresh every 15-45s with immediate refresh after sending
 
-## Project Structure
-
-```
-inbox3/
-├── frontend/                 # React frontend application
-│   ├── src/
-│   │   ├── components/       # React components
-│   │   │   ├── Inbox.tsx     # Message inbox component
-│   │   │   └── SendMessage.tsx # Send message component
-│   │   ├── lib/              # Utility libraries
-│   │   │   ├── crypto.ts     # Encryption utilities
-│   │   │   └── ipfs.ts       # IPFS storage utilities
-│   │   ├── abi/              # Smart contract ABI
-│   │   └── App.tsx           # Main application component
-│   ├── package.json          # Frontend dependencies
-│   └── vite.config.ts        # Vite configuration
-└── smart-contract/           # Move smart contract
-    ├── sources/
-    │   └── Inbox3.move       # Main contract implementation
-    ├── Move.toml             # Move package configuration
-    └── build/                # Compiled contract artifacts
+```typescript
+// Example: frontend call shape (ts-sdk)
+await client.transaction.buildAndSign(
+  signer,
+  {
+    function: `${CONTRACT_ADDRESS}::Inbox3::send_message`,
+    typeArguments: [],
+    functionArguments: [recipientAddress, cidBytes]
+  }
+);
 ```
 
-## Key Components
+## Features
 
-### Smart Contract (Inbox3.move)
-- **Message Struct**: Contains sender, IPFS CID, timestamp, and read status
-- **Inbox Struct**: User's message collection with auto-incrementing IDs
-- **Security**: Only message recipients can mark messages as read
+- On-chain inbox with entry functions: create_inbox, send_message, mark_read
+- View functions: inbox_of, get_message, get_message_count, inbox_exists
+- Wallet connect via Aptos Wallet Adapter (Petra/Martian)
+- IPFS pinning via Pinata with graceful fallback when keys are absent
+- Conservative auto-refresh to avoid Aptos rate limits; manual refresh available
+- Notifications and last-updated indicators in the UI
 
-### Frontend Components
-- **App.tsx**: Main application with wallet connection and routing
-- **Inbox.tsx**: Display and manage received messages
-- **SendMessage.tsx**: Send new messages to other users
-- **Crypto.ts**: Encryption utilities (currently simplified)
-- **IPFS.ts**: Pinata IPFS integration for decentralized storage
+## Roadmap
 
-## Security Considerations
-
-- Messages are stored on IPFS with CIDs recorded on blockchain
-- Private key management needs proper implementation for production
-- Current encryption is simplified - implement proper key exchange for production
-- Smart contract functions have basic access control
-
-## Development Status
-
-✅ **Completed**:
-- Smart contract implementation
-- Basic frontend with wallet integration
-- IPFS storage integration
-- Message sending and receiving
-- Inbox management
-
-⚠️ **Known Issues**:
-- Encryption implementation is simplified
-- TypeScript `any` types in some places
-- Window object wallet access needs proper typing
-
-🔄 **Future Enhancements**:
-- Proper end-to-end encryption
-- Message threading and replies
-- User profiles and contacts
-- Message search and filtering
-- Mobile responsive design improvements
+- [x] Deploy contract to DevNet and wire frontend
+- [x] IPFS pinning integration with fallbacks
+- [ ] Harden end-to-end encryption and key management
+- [ ] WebSocket/push-based real-time when API keys are available
+- [ ] Message threading, search, profiles, reactions
+- [ ] Mobile responsiveness polish
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+Contributions are welcome. Fork the repo, create a feature branch, commit, push, and open a pull request. Please open an issue first for significant changes.
 
 ## License
 
-This project is open source and available under the MIT License.
+Distributed under the MIT License. See LICENSE.md for details.
+
+## Contact
+
+Tuman Sutradhar
+
+- GitHub: [@tumansutradhar](https://github.com/tumansutradhar)
+- Email: connect.tuman@gmail.com
+- LinkedIn: [Tuman Sutradhar](https://www.linkedin.com/in/tumansutradhar/)
+
+Project Link: [https://github.com/tumansutradhar/inbox-3](https://github.com/tumansutradhar/inbox-3)
+
+## Acknowledgments
+
+- Aptos SDK and wallet adapter
+- Pinata IPFS
+- Inspiration from common web3 messaging patterns
